@@ -1,0 +1,25 @@
+# Normalização de fim de linha.
+# O asset do manifesto integra o pacote do app e é comparado byte a byte com o
+# texto canônico aprovado (RF-09.1, RNF-05.7); qualquer conversão para CRLF no
+# checkout quebra essa integridade.
+* text=auto eol=lf
+
+assets/manifesto/manifesto.md text eol=lf
+*.dart text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+
+# Binários: nunca normalizar.
+*.mp3 binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.ico binary
+*.jar binary
+*.keystore binary
+*.dll binary
+*.so binary
+*.dylib binary

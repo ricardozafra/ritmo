@@ -1,0 +1,252 @@
+{
+  "schema": "ritmo.export",
+  "schema_version": 1,
+  "generated_at": "2026-05-04T12:00:00-03:00",
+  "business_timezone": "America/Sao_Paulo",
+  "settings": {
+    "activation_date": "2026-01-05",
+    "day_close_time": "03:00",
+    "night_end_time": "01:30",
+    "review": {
+      "weekday": "sunday",
+      "time": "21:00",
+      "sunday_notification_enabled": false
+    },
+    "sync_enabled": false
+  },
+  "days": [
+    {
+      "operational_date": "2026-01-09",
+      "base_result": "sealed",
+      "effective_result": "mute",
+      "mute_cause": "holiday",
+      "previous_result": "sealed",
+      "closed_at": "2026-01-10T03:00:00-03:00",
+      "seal_timestamp": "2026-01-09T22:41:00-03:00",
+      "derived": {
+        "is_workday": false,
+        "counts_in_metrics": false
+      },
+      "pillar_entries": [
+        {
+          "operational_date": "2026-01-09",
+          "pillar": "morning",
+          "workout_done": true,
+          "briefing_done": true,
+          "briefing_mode": "automatic",
+          "workout_at": "2026-01-09T06:30:00-03:00",
+          "briefing_at": "2026-01-09T07:10:00-03:00",
+          "toggle_on": false,
+          "change_initiative_id": null,
+          "note_text": null,
+          "note_audio_ref": null,
+          "night_kind": null,
+          "recovery_note": null,
+          "study_block_id": null
+        },
+        {
+          "operational_date": "2026-01-09",
+          "pillar": "day",
+          "workout_done": false,
+          "briefing_done": false,
+          "briefing_mode": null,
+          "workout_at": null,
+          "briefing_at": null,
+          "toggle_on": true,
+          "change_initiative_id": "initiative-clarity",
+          "note_text": "Decisão registrada no dia operacional original.",
+          "note_audio_ref": {
+            "id": "audio-day-2026-01-09",
+            "relative_path": "audio/day-2026-01-09.m4a"
+          },
+          "night_kind": null,
+          "recovery_note": null,
+          "study_block_id": null
+        },
+        {
+          "operational_date": "2026-01-09",
+          "pillar": "night",
+          "workout_done": false,
+          "briefing_done": false,
+          "briefing_mode": null,
+          "workout_at": null,
+          "briefing_at": null,
+          "toggle_on": false,
+          "change_initiative_id": null,
+          "note_text": null,
+          "note_audio_ref": null,
+          "night_kind": "study",
+          "recovery_note": null,
+          "study_block_id": "study-block-2026-01-09"
+        }
+      ],
+      "study_blocks": [
+        {
+          "id": "study-block-2026-01-09",
+          "operational_date": "2026-01-09",
+          "started_at": "2026-01-09T23:10:00-03:00",
+          "block_deadline": "2026-01-10T01:30:00-03:00",
+          "ended_at": "2026-01-10T00:20:00-03:00"
+        }
+      ],
+      "pillar_waivers": [
+        {
+          "id": "waiver-2026-01-09-morning",
+          "operational_date": "2026-01-09",
+          "pillar": "morning",
+          "reason_text": "Exceção auditável já revogada.",
+          "recurrence_confirmed": true,
+          "revoked_at": "2026-01-09T07:11:00-03:00"
+        }
+      ]
+    }
+  ],
+  "holidays": [
+    {
+      "operational_date": "2026-01-09",
+      "active": true,
+      "created_at": "2026-01-09T08:00:00-03:00",
+      "removed_at": null,
+      "apply_reason_text": "Feriado local",
+      "remove_reason_text": null
+    }
+  ],
+  "protocol_alarms": [
+    {
+      "id": "protocol-2026-02-10",
+      "generation_id": "seq:2026-02-10",
+      "start_date": "2026-02-10",
+      "end_date": "2026-02-12",
+      "sequence_length": 3,
+      "state": "invalidated",
+      "previous_state": "pending",
+      "triggered_at": "2026-02-12T03:00:00-03:00",
+      "cause": "A sequência foi reclassificada.",
+      "plan_or_execution": "plan",
+      "adjustment": "Reavaliar o plano na próxima revisão."
+    }
+  ],
+  "cycles": [
+    {
+      "id": "cycle-2026-h1",
+      "name": "Ciclo de fundação",
+      "purpose_text": "Consolidar competências no primeiro semestre.",
+      "start_date": "2026-01-05",
+      "end_date": "2026-06-28",
+      "state": "active",
+      "derived": {
+        "awaiting_closure": false
+      },
+      "checkpoints": [
+        {
+          "id": "checkpoint-cycle-2026-h1-st",
+          "cycle_id": "cycle-2026-h1",
+          "competency": "ST",
+          "date": "2026-03-29",
+          "status": "evaluated",
+          "checkpoint_evals": [
+            {
+              "id": "checkpoint-eval-cycle-2026-h1-st",
+              "checkpoint_id": "checkpoint-cycle-2026-h1-st",
+              "weekly_review_id": "weekly-review-2026-03-23",
+              "gartner_level": "I",
+              "notes": "Evidências registradas na revisão semanal."
+            }
+          ]
+        }
+      ],
+      "cycle_closure_invites": [
+        {
+          "cycle_id": "cycle-2026-h1",
+          "week_start": "2026-06-29"
+        }
+      ]
+    }
+  ],
+  "mentorships": [
+    {
+      "id": "mentorship-st",
+      "competency": "ST",
+      "mentor_name": "Mentoria de sistemas",
+      "last_meeting_date": "2026-03-20"
+    }
+  ],
+  "contacts": [
+    {
+      "id": "contact-ana",
+      "name": "Ana",
+      "context_note": "Contato profissional acompanhado semanalmente.",
+      "last_touch_date": "2026-03-25",
+      "created_at": "2026-01-05T09:00:00-03:00",
+      "weekly_contact_suggestions": [
+        {
+          "week_start": "2026-03-23",
+          "contact_id": "contact-ana",
+          "status": "done",
+          "created_at": "2026-03-23T03:00:00-03:00"
+        }
+      ]
+    }
+  ],
+  "weekly_reviews": [
+    {
+      "id": "weekly-review-2026-03-23",
+      "week_start": "2026-03-23",
+      "answer_fulfilled": "O compromisso principal foi concluído.",
+      "answer_failed": "Uma reunião precisou ser remarcada.",
+      "answer_lesson": "Reservar margem para mudanças de agenda.",
+      "audio_ref": {
+        "id": "audio-review-2026-03-23",
+        "relative_path": "audio/review-2026-03-23.m4a"
+      },
+      "state": "finalized",
+      "created_at": "2026-03-29T20:00:00-03:00",
+      "autosaved_at": "2026-03-29T20:30:00-03:00",
+      "finalized_at": "2026-03-29T21:00:00-03:00"
+    }
+  ],
+  "manifest": {
+    "id": "manifest",
+    "asset_version": "1.0.0",
+    "first_copied_at": "2026-01-05T08:00:00-03:00",
+    "last_edited_at": "2026-03-15T18:00:00-03:00",
+    "content_markdown": "# Manifesto\n\nConteúdo local preservado."
+  },
+  "change_initiatives": [
+    {
+      "id": "initiative-clarity",
+      "name": "Clareza de decisão",
+      "active": true
+    }
+  ],
+  "audio_assets": [
+    {
+      "id": "audio-day-2026-01-09",
+      "relative_path": "audio/day-2026-01-09.m4a",
+      "kind": "day_note",
+      "duration_ms": 84000,
+      "byte_size": 672000,
+      "created_at": "2026-01-09T15:30:00-03:00"
+    },
+    {
+      "id": "audio-review-2026-03-23",
+      "relative_path": "audio/review-2026-03-23.m4a",
+      "kind": "weekly_review",
+      "duration_ms": 420000,
+      "byte_size": 3360000,
+      "created_at": "2026-03-29T20:45:00-03:00"
+    }
+  ],
+  "notification_plans": [
+    {
+      "idempotency_key": "weekly_review_sunday:2026-03-23",
+      "kind": "weekly_review_sunday",
+      "planned_at": "2026-03-29T21:00:00-03:00",
+      "state": "delivered"
+    }
+  ],
+  "metrics_snapshot": {
+    "numerator": 3,
+    "denominator": 4
+  }
+}
