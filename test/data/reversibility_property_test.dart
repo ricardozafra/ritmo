@@ -59,9 +59,8 @@ final Generator<_ReversibilityCase> _anyReversibilityCase = any.simple(
       '',
       'nota alterada',
     ].where((note) => note != initialNote).toList()[random.nextInt(2)];
-    final generatedNight = _NightState.values[random.nextInt(
-      _NightState.values.length,
-    )];
+    final generatedNight =
+        _NightState.values[random.nextInt(_NightState.values.length)];
     final night = switch (action) {
       _ReversibleAction.cancelActiveStudy => _NightState.activeStudy,
       _ReversibleAction.removeCompletedStudy ||
@@ -112,60 +111,60 @@ OperationalDate _asWorkday(OperationalDate date) {
 }
 
 void main() {
-  Glados<_ReversibilityCase>(
-    _anyReversibilityCase,
-    RitmoGlados.ci(),
-  ).test('Propriedade 6: reversibilidade em open/unsealed', (fixture) async {
-    const calendar = OperationalCalendar(
-      dayCloseTime: LocalTimeOfDay(3, 0),
-      nightEndTime: LocalTimeOfDay(1, 0),
-    );
-    final location = ensureBusinessLocation();
-    final clock = SystemOperationalClock(
-      calendar: calendar,
-      businessLocation: location,
-    );
-    final database = RitmoDatabase(NativeDatabase.memory());
-    final commands = OpenDayCommandsRepository(database, clock: clock);
-    final entries = PillarEntriesRepository(
-      database,
-      businessLocation: location,
-    );
-    final context =
-        'data ${fixture.date.iso}, ação ${fixture.action.name}, '
-        'dispensa ${fixture.waiver?.name}, reaberto ${fixture.reopened}';
+  Glados<_ReversibilityCase>(_anyReversibilityCase, RitmoGlados.ci()).test(
+    'Propriedade 6: reversibilidade em open/unsealed',
+    (fixture) async {
+      const calendar = OperationalCalendar(
+        dayCloseTime: LocalTimeOfDay(3, 0),
+        nightEndTime: LocalTimeOfDay(1, 0),
+      );
+      final location = ensureBusinessLocation();
+      final clock = SystemOperationalClock(
+        calendar: calendar,
+        businessLocation: location,
+      );
+      final database = RitmoDatabase(NativeDatabase.memory());
+      final commands = OpenDayCommandsRepository(database, clock: clock);
+      final entries = PillarEntriesRepository(
+        database,
+        businessLocation: location,
+      );
+      final context =
+          'data ${fixture.date.iso}, ação ${fixture.action.name}, '
+          'dispensa ${fixture.waiver?.name}, reaberto ${fixture.reopened}';
 
-    try {
-      await _seed(database, fixture, clock);
-      if (fixture.reopened) {
-        final reopened = _success(
-          await DayRepository(
-            database,
-            businessLocation: location,
-          ).reopenDay(fixture.date),
-        );
-        expect(reopened.baseResult.name, 'unsealed', reason: context);
-        expect(reopened.sealTimestamp, isNull, reason: context);
+      try {
+        await _seed(database, fixture, clock);
+        if (fixture.reopened) {
+          final reopened = _success(
+            await DayRepository(
+              database,
+              businessLocation: location,
+            ).reopenDay(fixture.date),
+          );
+          expect(reopened.baseResult.name, 'unsealed', reason: context);
+          expect(reopened.sealTimestamp, isNull, reason: context);
+        }
+
+        await _expectOpenUnsealed(database, fixture.date, context);
+        final before = await entries.statusForDate(fixture.date);
+        final waiver = fixture.waiver == null
+            ? null
+            : PillarWaiver(pillar: fixture.waiver!);
+        final eligibleBefore = sealEligible(before, waiver);
+
+        await _applyThenInverse(commands, database, fixture, clock, context);
+
+        final after = await entries.statusForDate(fixture.date);
+        _expectSameStatus(after, before, context);
+        expect(sealEligible(after, waiver), eligibleBefore, reason: context);
+        await _expectOpenUnsealed(database, fixture.date, context);
+        await _expectOnlyOperationalDate(database, fixture.date, context);
+      } finally {
+        await database.close();
       }
-
-      await _expectOpenUnsealed(database, fixture.date, context);
-      final before = await entries.statusForDate(fixture.date);
-      final waiver = fixture.waiver == null
-          ? null
-          : PillarWaiver(pillar: fixture.waiver!);
-      final eligibleBefore = sealEligible(before, waiver);
-
-      await _applyThenInverse(commands, database, fixture, clock, context);
-
-      final after = await entries.statusForDate(fixture.date);
-      _expectSameStatus(after, before, context);
-      expect(sealEligible(after, waiver), eligibleBefore, reason: context);
-      await _expectOpenUnsealed(database, fixture.date, context);
-      await _expectOnlyOperationalDate(database, fixture.date, context);
-    } finally {
-      await database.close();
-    }
-  });
+    },
+  );
 }
 
 Future<void> _applyThenInverse(
@@ -218,15 +217,10 @@ Future<void> _applyThenInverse(
 
     case _ReversibleAction.dayToggle:
       final changed = _success(
-        await commands.setDayToggle(
-          fixture.date,
-          on: !fixture.toggleOn,
-        ),
+        await commands.setDayToggle(fixture.date, on: !fixture.toggleOn),
       );
       expect(changed.toggleOn, !fixture.toggleOn, reason: context);
-      _success(
-        await commands.setDayToggle(fixture.date, on: fixture.toggleOn),
-      );
+      _success(await commands.setDayToggle(fixture.date, on: fixture.toggleOn));
 
     case _ReversibleAction.dayNote:
       final changed = _success(
@@ -250,9 +244,7 @@ Future<void> _applyThenInverse(
       );
 
     case _ReversibleAction.removeCompletedStudy:
-      final changed = _success(
-        await commands.removeNightChoice(fixture.date),
-      );
+      final changed = _success(await commands.removeNightChoice(fixture.date));
       expect(changed.kind, isNull, reason: context);
       await _expectNoBlocks(database, context);
       _success(
@@ -265,9 +257,7 @@ Future<void> _applyThenInverse(
       _success(await commands.finishStudy(fixture.date, at: finish));
 
     case _ReversibleAction.removeRecovery:
-      final changed = _success(
-        await commands.removeNightChoice(fixture.date),
-      );
+      final changed = _success(await commands.removeNightChoice(fixture.date));
       expect(changed.kind, isNull, reason: context);
       _success(
         await commands.chooseRecovery(
@@ -387,9 +377,9 @@ Future<void> _seedNight(
     return;
   }
 
-  final start = clock.operationalOpen(fixture.date).add(
-    const Duration(hours: 1),
-  );
+  final start = clock
+      .operationalOpen(fixture.date)
+      .add(const Duration(hours: 1));
   final deadline = clock.blockDeadline(fixture.date);
   final endedAt = fixture.night == _NightState.completedStudy
       ? start.add(const Duration(minutes: 1)).millisecondsSinceEpoch
@@ -414,12 +404,12 @@ Future<void> _seedNight(
   );
 }
 
-void _expectSameStatus(PillarStatus actual, PillarStatus expected, String reason) {
-  expect(
-    actual.morningCompleted,
-    expected.morningCompleted,
-    reason: reason,
-  );
+void _expectSameStatus(
+  PillarStatus actual,
+  PillarStatus expected,
+  String reason,
+) {
+  expect(actual.morningCompleted, expected.morningCompleted, reason: reason);
   expect(actual.dayCompleted, expected.dayCompleted, reason: reason);
   expect(actual.nightCompleted, expected.nightCompleted, reason: reason);
 }
@@ -443,14 +433,18 @@ Future<void> _expectOnlyOperationalDate(
   OperationalDate date,
   String context,
 ) async {
-  final dayDates = (await database.select(database.days).get())
-      .map((row) => row.operationalDate);
-  final entryDates = (await database.select(database.pillarEntries).get())
-      .map((row) => row.operationalDate);
-  final blockDates = (await database.select(database.studyBlocks).get())
-      .map((row) => row.operationalDate);
-  final waiverDates = (await database.select(database.pillarWaivers).get())
-      .map((row) => row.date);
+  final dayDates = (await database.select(database.days).get()).map(
+    (row) => row.operationalDate,
+  );
+  final entryDates = (await database.select(database.pillarEntries).get()).map(
+    (row) => row.operationalDate,
+  );
+  final blockDates = (await database.select(database.studyBlocks).get()).map(
+    (row) => row.operationalDate,
+  );
+  final waiverDates = (await database.select(database.pillarWaivers).get()).map(
+    (row) => row.date,
+  );
   expect(
     {...dayDates, ...entryDates, ...blockDates, ...waiverDates},
     {date.iso},

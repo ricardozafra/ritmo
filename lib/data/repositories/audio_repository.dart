@@ -47,7 +47,8 @@ final class AudioRepository {
   final AudioPolicy _audioPolicy;
   final tz.Location _businessLocation;
 
-  Directory get audioDirectory => Directory(p.join(baseDirectory.path, 'audio'));
+  Directory get audioDirectory =>
+      Directory(p.join(baseDirectory.path, 'audio'));
 
   /// Salva um novo arquivo de áudio com verificação prévia de espaço,
   /// encerramento gracioso no limite e preservação do arquivo anterior em caso de falha.
@@ -106,40 +107,33 @@ final class AudioRepository {
 
       // 4. Persistência relacional em transação (RNF-05.5)
       await database.transaction(() async {
-        await database.into(database.audioAssets).insert(
-          db.AudioAssetsCompanion.insert(
-            id: id,
-            relativePath: relativePath,
-            kind: kind.wireValue,
-            durationMs: clampedDuration,
-            byteSize: byteSize,
-            createdAt: createdAt.millisecondsSinceEpoch,
-          ),
-          mode: InsertMode.insertOrReplace,
-        );
+        await database
+            .into(database.audioAssets)
+            .insert(
+              db.AudioAssetsCompanion.insert(
+                id: id,
+                relativePath: relativePath,
+                kind: kind.wireValue,
+                durationMs: clampedDuration,
+                byteSize: byteSize,
+                createdAt: createdAt.millisecondsSinceEpoch,
+              ),
+              mode: InsertMode.insertOrReplace,
+            );
 
         if (targetPillarDate != null) {
-          await (database.update(database.pillarEntries)
-                ..where(
-                  (r) =>
-                      r.operationalDate.equals(targetPillarDate) &
-                      r.pillar.equals('day'),
-                ))
-              .write(
-                db.PillarEntriesCompanion(
-                  noteAudioId: Value(id),
-                ),
-              );
+          await (database.update(database.pillarEntries)..where(
+                (r) =>
+                    r.operationalDate.equals(targetPillarDate) &
+                    r.pillar.equals('day'),
+              ))
+              .write(db.PillarEntriesCompanion(noteAudioId: Value(id)));
         }
 
         if (targetWeeklyReviewId != null) {
           await (database.update(database.weeklyReviews)
                 ..where((r) => r.id.equals(targetWeeklyReviewId)))
-              .write(
-                db.WeeklyReviewsCompanion(
-                  audioId: Value(id),
-                ),
-              );
+              .write(db.WeeklyReviewsCompanion(audioId: Value(id)));
         }
       });
 
@@ -179,18 +173,18 @@ final class AudioRepository {
 
   /// Busca metadados do áudio por identificador.
   Future<AudioAssetRecord?> findById(String id) async {
-    final row = await (database.select(database.audioAssets)
-          ..where((r) => r.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (database.select(
+      database.audioAssets,
+    )..where((r) => r.id.equals(id))).getSingleOrNull();
     if (row == null) return null;
     return _toRecord(row);
   }
 
   /// Observa todos os áudios locais persistidos.
-  Stream<List<AudioAssetRecord>> watchAll() =>
-      database.select(database.audioAssets).watch().map(
-            (rows) => rows.map(_toRecord).toList(),
-          );
+  Stream<List<AudioAssetRecord>> watchAll() => database
+      .select(database.audioAssets)
+      .watch()
+      .map((rows) => rows.map(_toRecord).toList());
 
   AudioAssetRecord _toRecord(db.AudioAsset row) => AudioAssetRecord(
     id: row.id,

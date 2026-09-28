@@ -46,7 +46,6 @@ void main() {
       expect(result.acceptedRunes, 2);
     });
 
-
     test('conta marcas combinantes como code points separados', () {
       final result = policy.clampRunes('e\u0301x', 2);
 
@@ -83,8 +82,7 @@ void main() {
       final result = policy.assertManifestSize(markdown);
 
       expect(result, isA<Failure<void, LimitViolation>>());
-      final violation =
-          (result as Failure<void, LimitViolation>).failure;
+      final violation = (result as Failure<void, LimitViolation>).failure;
       expect(violation.actual, Limits.manifestMaxUtf8Bytes + 1);
       expect(violation.maximum, Limits.manifestMaxUtf8Bytes);
       expect(violation.unit, LimitUnit.utf8Bytes);

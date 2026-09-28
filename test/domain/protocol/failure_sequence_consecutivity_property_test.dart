@@ -217,11 +217,8 @@ List<_RefSeq> _reference(List<_Slot> slots, OperationalDate activation) {
   return sequences;
 }
 
-_RefSeq _asRef(FailureSequence sequence) => (
-  start: sequence.startDate,
-  end: sequence.endDate,
-  length: sequence.length,
-);
+_RefSeq _asRef(FailureSequence sequence) =>
+    (start: sequence.startDate, end: sequence.endDate, length: sequence.length);
 
 List<_RefSeq> _asRefs(Iterable<FailureSequence> sequences) =>
     sequences.map(_asRef).toList(growable: false);
@@ -234,19 +231,22 @@ void main() {
     'pré-ativação',
     (_ConsecutivityInput input) {
       final activation = input.activationDate;
-      final withMute = detector.detect(
-        _projectAll(input.slots),
-        activation,
-      );
+      final withMute = detector.detect(_projectAll(input.slots), activation);
       final context =
           'activation=${activation.iso}, slots=${input.slots.length}, '
           'sequências=${withMute.length}';
 
-      expect(_asRefs(withMute), _reference(input.slots, activation),
-          reason: context);
+      expect(
+        _asRefs(withMute),
+        _reference(input.slots, activation),
+        reason: context,
+      );
       for (final sequence in withMute) {
-        expect(sequence.generationId, 'seq:${sequence.startDate.iso}',
-            reason: context);
+        expect(
+          sequence.generationId,
+          'seq:${sequence.startDate.iso}',
+          reason: context,
+        );
       }
 
       // 1. Dias `mute` são transparentes: removê-los de posições arbitrárias
@@ -266,7 +266,8 @@ void main() {
               input.bridgeMonday <= sequence.endDate,
         ),
         isTrue,
-        reason: 'ponte ${input.bridgeFriday.iso} -> '
+        reason:
+            'ponte ${input.bridgeFriday.iso} -> '
             '${input.bridgeMonday.iso} deve ficar na mesma sequência '
             '($context)',
       );
@@ -298,8 +299,11 @@ void main() {
         input.preActivationFailures.first,
         reason: context,
       );
-      expect(_asRefs(withEarlyActivation), isNot(_asRefs(withMute)),
-          reason: context);
+      expect(
+        _asRefs(withEarlyActivation),
+        isNot(_asRefs(withMute)),
+        reason: context,
+      );
 
       // 3. Inserir um dia útil selado em uma data livre interna parte a
       // sequência que o contém; os pedaços com dois ou mais dias sobrevivem.
@@ -313,10 +317,7 @@ void main() {
           if (slot.date != input.insertionDate) slot,
         (date: input.insertionDate, kind: _SlotKind.sealedWorkday),
       ];
-      final afterInsertion = detector.detect(
-        _projectAll(inserted),
-        activation,
-      );
+      final afterInsertion = detector.detect(_projectAll(inserted), activation);
 
       final failureDates = <OperationalDate>[
         for (final slot in input.slots)
@@ -344,8 +345,11 @@ void main() {
       ];
 
       expect(_asRefs(afterInsertion), expectedAfter, reason: context);
-      expect(_asRefs(afterInsertion), _reference(inserted, activation),
-          reason: context);
+      expect(
+        _asRefs(afterInsertion),
+        _reference(inserted, activation),
+        reason: context,
+      );
       expect(
         afterInsertion.any(
           (sequence) =>
@@ -353,7 +357,8 @@ void main() {
               input.insertionDate <= sequence.endDate,
         ),
         isFalse,
-        reason: 'nenhuma sequência pode atravessar '
+        reason:
+            'nenhuma sequência pode atravessar '
             '${input.insertionDate.iso} ($context)',
       );
     },

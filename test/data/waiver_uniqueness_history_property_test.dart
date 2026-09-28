@@ -80,11 +80,13 @@ Future<Map<String, _StoredWaiver>> _readHistory(
   data.RitmoDatabase database,
   OperationalDate date,
 ) async {
-  final rows = await database.customSelect(
-    'SELECT id, pillar, reason_text, revoked_at FROM pillar_waivers '
-    'WHERE date = ? ORDER BY rowid',
-    variables: [Variable<String>(date.iso)],
-  ).get();
+  final rows = await database
+      .customSelect(
+        'SELECT id, pillar, reason_text, revoked_at FROM pillar_waivers '
+        'WHERE date = ? ORDER BY rowid',
+        variables: [Variable<String>(date.iso)],
+      )
+      .get();
   return <String, _StoredWaiver>{
     for (final row in rows)
       row.read<String>('id'): (
@@ -107,10 +109,7 @@ Iterable<waiver.PillarWaiver> _asDomainHistory(
     reasonText: stored.reasonText,
     revokedAt: stored.revokedAt == null
         ? null
-        : tz.TZDateTime.fromMillisecondsSinceEpoch(
-            tz.UTC,
-            stored.revokedAt!,
-          ),
+        : tz.TZDateTime.fromMillisecondsSinceEpoch(tz.UTC, stored.revokedAt!),
   ),
 );
 
@@ -122,10 +121,7 @@ seal.PillarStatus _onlyPillarIncomplete(seal.Pillar pillar) =>
     );
 
 void main() {
-  Glados<List<_WaiverAction>>(
-    _anyWaiverSequence,
-    RitmoGlados.ci(),
-  ).test(
+  Glados<List<_WaiverAction>>(_anyWaiverSequence, RitmoGlados.ci()).test(
     'Propriedade 11: no máximo uma dispensa ativa, com histórico monotônico',
     (actions) async {
       final database = data.RitmoDatabase(NativeDatabase.memory());
@@ -227,10 +223,7 @@ void main() {
               : seal.PillarWaiver(pillar: active.pillar);
           for (final missing in seal.Pillar.values) {
             expect(
-              seal.sealEligible(
-                _onlyPillarIncomplete(missing),
-                activeForSeal,
-              ),
+              seal.sealEligible(_onlyPillarIncomplete(missing), activeForSeal),
               active?.pillar == missing,
               reason: '$context; pilar incompleto ${missing.name}',
             );
@@ -245,9 +238,7 @@ void main() {
             reason: context,
           );
           expect(
-            waiver.DayContext(
-              waivers: domainHistory,
-            ).hasActiveWaiverOn(date),
+            waiver.DayContext(waivers: domainHistory).hasActiveWaiverOn(date),
             active != null,
             reason: context,
           );

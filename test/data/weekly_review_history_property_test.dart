@@ -18,9 +18,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../generators/shared.dart';
 
-typedef _HistoryFixture = ({
-  List<OperationalDate> weekStarts,
-});
+typedef _HistoryFixture = ({List<OperationalDate> weekStarts});
 
 final Generator<_HistoryFixture> _anyHistoryFixture = any.simple(
   generate: (random, size) {
@@ -38,7 +36,12 @@ final Generator<_HistoryFixture> _anyHistoryFixture = any.simple(
   },
   shrink: (fixture) sync* {
     if (fixture.weekStarts.length > 2) {
-      yield (weekStarts: fixture.weekStarts.sublist(0, fixture.weekStarts.length - 1));
+      yield (
+        weekStarts: fixture.weekStarts.sublist(
+          0,
+          fixture.weekStarts.length - 1,
+        ),
+      );
     }
   },
 );
@@ -47,11 +50,16 @@ void main() {
   Glados<_HistoryFixture>(
     _anyHistoryFixture,
     RitmoGlados.ci(),
-  ).test('Propriedade 43: Histórico de revisões é uma lista cronológica simples', (fixture) async {
+  ).test('Propriedade 43: Histórico de revisões é uma lista cronológica simples', (
+    fixture,
+  ) async {
     final database = db.RitmoDatabase(NativeDatabase.memory());
     final repository = WeeklyReviewRepository(database);
     final location = ensureBusinessLocation();
-    final at = tz.TZDateTime.fromMillisecondsSinceEpoch(location, 1767225600000);
+    final at = tz.TZDateTime.fromMillisecondsSinceEpoch(
+      location,
+      1767225600000,
+    );
 
     try {
       // Insere as revisões na ordem embaralhada gerada
@@ -81,7 +89,8 @@ void main() {
         expect(
           current > next,
           isTrue,
-          reason: 'Semana $current deve ser estritamente posterior a $next no histórico decrescente',
+          reason:
+              'Semana $current deve ser estritamente posterior a $next no histórico decrescente',
         );
       }
     } finally {
@@ -102,40 +111,42 @@ void main() {
       }
     });
 
-    test('revisões draft e finalized aparecem no histórico sem filtros', () async {
-      final database = db.RitmoDatabase(NativeDatabase.memory());
-      final repository = WeeklyReviewRepository(database);
-      final location = ensureBusinessLocation();
-      final at = tz.TZDateTime.fromMillisecondsSinceEpoch(location, 1767225600000);
-
-      try {
-        final w1 = OperationalDate(2026, 1, 5);
-        final w2 = OperationalDate(2026, 1, 12);
-
-        final r1 = await repository.ensureDraft(
-          id: 'r1',
-          weekStart: w1,
-          createdAt: at,
-        );
-        await repository.ensureDraft(
-          id: 'r2',
-          weekStart: w2,
-          createdAt: at,
-        );
-        await repository.finalize(
-          id: r1.id,
-          at: at.add(const Duration(hours: 1)),
+    test(
+      'revisões draft e finalized aparecem no histórico sem filtros',
+      () async {
+        final database = db.RitmoDatabase(NativeDatabase.memory());
+        final repository = WeeklyReviewRepository(database);
+        final location = ensureBusinessLocation();
+        final at = tz.TZDateTime.fromMillisecondsSinceEpoch(
+          location,
+          1767225600000,
         );
 
-        final history = await repository.watchHistory().first;
-        expect(history.length, equals(2));
-        expect(history[0].weekStart, equals(w2));
-        expect(history[0].state, equals(WeeklyReviewState.draft));
-        expect(history[1].weekStart, equals(w1));
-        expect(history[1].state, equals(WeeklyReviewState.finalized));
-      } finally {
-        await database.close();
-      }
-    });
+        try {
+          final w1 = OperationalDate(2026, 1, 5);
+          final w2 = OperationalDate(2026, 1, 12);
+
+          final r1 = await repository.ensureDraft(
+            id: 'r1',
+            weekStart: w1,
+            createdAt: at,
+          );
+          await repository.ensureDraft(id: 'r2', weekStart: w2, createdAt: at);
+          await repository.finalize(
+            id: r1.id,
+            at: at.add(const Duration(hours: 1)),
+          );
+
+          final history = await repository.watchHistory().first;
+          expect(history.length, equals(2));
+          expect(history[0].weekStart, equals(w2));
+          expect(history[0].state, equals(WeeklyReviewState.draft));
+          expect(history[1].weekStart, equals(w1));
+          expect(history[1].state, equals(WeeklyReviewState.finalized));
+        } finally {
+          await database.close();
+        }
+      },
+    );
   });
 }

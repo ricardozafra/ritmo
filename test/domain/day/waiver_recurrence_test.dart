@@ -189,10 +189,7 @@ void main() {
       Pillar.day,
       thursday,
       WaiverHistory(
-        days: [
-          day(wednesday, isSealed: true),
-          day(thursday, isClosed: false),
-        ],
+        days: [day(wednesday, isSealed: true), day(thursday, isClosed: false)],
         waivers: [waiver(wednesday, Pillar.day)],
       ),
     );
@@ -272,8 +269,7 @@ void main() {
       DayContext(days: week()),
     );
 
-    final created =
-        (result as Success<PillarWaiver, WaiverViolation>).value;
+    final created = (result as Success<PillarWaiver, WaiverViolation>).value;
     expect(created.recurrenceConfirmed, isFalse);
   });
 }

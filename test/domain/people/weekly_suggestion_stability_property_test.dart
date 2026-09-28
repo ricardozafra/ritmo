@@ -63,11 +63,16 @@ void main() {
   Glados<_StabilityFixture>(
     _anyStabilityFixture,
     RitmoGlados.ci(),
-  ).test('Propriedade 38: A sugestão persistida é estável na semana', (fixture) async {
+  ).test('Propriedade 38: A sugestão persistida é estável na semana', (
+    fixture,
+  ) async {
     final database = db.RitmoDatabase(NativeDatabase.memory());
     final repository = WeeklyContactSuggestionRepository(database);
     final location = ensureBusinessLocation();
-    final at = tz.TZDateTime.fromMillisecondsSinceEpoch(location, 1767225600000);
+    final at = tz.TZDateTime.fromMillisecondsSinceEpoch(
+      location,
+      1767225600000,
+    );
 
     try {
       final contacts = <Contact>[];
@@ -79,13 +84,15 @@ void main() {
           lastTouchDate: OperationalDate(2026, 1, 1).addDays(i),
         );
         contacts.add(contact);
-        await database.into(database.contacts).insert(
-          db.ContactsCompanion.insert(
-            id: contact.id,
-            name: contact.name,
-            createdAt: contact.createdAt.millisecondsSinceEpoch,
-          ),
-        );
+        await database
+            .into(database.contacts)
+            .insert(
+              db.ContactsCompanion.insert(
+                id: contact.id,
+                name: contact.name,
+                createdAt: contact.createdAt.millisecondsSinceEpoch,
+              ),
+            );
       }
 
       // Ordena e garante a sugestão inicial
@@ -97,9 +104,9 @@ void main() {
       );
 
       // Obtém o contact_id da sugestão vigente inicial
-      final rowsInitial = await (database.select(database.weeklyContactSuggestions)
-            ..where((r) => r.weekStart.equals(fixture.weekStart.iso)))
-          .get();
+      final rowsInitial = await (database.select(
+        database.weeklyContactSuggestions,
+      )..where((r) => r.weekStart.equals(fixture.weekStart.iso))).get();
       final pendingInitial = rowsInitial.firstWhere(
         (r) => r.status == domain.SuggestionStatus.pending.name,
       );
@@ -114,16 +121,20 @@ void main() {
             id: 'new-$m',
             name: 'Novo Contato $m',
             createdAt: at.add(Duration(seconds: 100 + m)),
-            lastTouchDate: mutation.hasTouchDate ? fixture.weekStart.addDays(-1) : null,
+            lastTouchDate: mutation.hasTouchDate
+                ? fixture.weekStart.addDays(-1)
+                : null,
           );
           contacts.add(newContact);
-          await database.into(database.contacts).insert(
-            db.ContactsCompanion.insert(
-              id: newContact.id,
-              name: newContact.name,
-              createdAt: newContact.createdAt.millisecondsSinceEpoch,
-            ),
-          );
+          await database
+              .into(database.contacts)
+              .insert(
+                db.ContactsCompanion.insert(
+                  id: newContact.id,
+                  name: newContact.name,
+                  createdAt: newContact.createdAt.millisecondsSinceEpoch,
+                ),
+              );
         } else {
           // Edição de contato existente
           final targetIdx = mutation.contactIndex % contacts.length;
@@ -137,9 +148,7 @@ void main() {
           contacts[targetIdx] = updated;
           await (database.update(database.contacts)
                 ..where((r) => r.id.equals(existing.id)))
-              .write(
-            db.ContactsCompanion(name: Value(updated.name)),
-          );
+              .write(db.ContactsCompanion(name: Value(updated.name)));
         }
 
         // Recalcula a nova ordem semanal
@@ -153,9 +162,9 @@ void main() {
         );
 
         // A sugestão vigente (pending) DEVE permanecer para o mesmo contact_id!
-        final rowsAfter = await (database.select(database.weeklyContactSuggestions)
-              ..where((r) => r.weekStart.equals(fixture.weekStart.iso)))
-            .get();
+        final rowsAfter = await (database.select(
+          database.weeklyContactSuggestions,
+        )..where((r) => r.weekStart.equals(fixture.weekStart.iso))).get();
         final pendingAfter = rowsAfter.where(
           (r) => r.status == domain.SuggestionStatus.pending.name,
         );
@@ -169,68 +178,83 @@ void main() {
   });
 
   group('Propriedade 38: Teste determinístico de adição com carência máxima', () {
-    test('novo contato com lastTouchDate nula não rouba a sugestão já persistida', () async {
-      final database = db.RitmoDatabase(NativeDatabase.memory());
-      final repository = WeeklyContactSuggestionRepository(database);
-      final location = ensureBusinessLocation();
-      final at = tz.TZDateTime.fromMillisecondsSinceEpoch(location, 1767225600000);
-      final weekStart = OperationalDate(2026, 3, 9);
-
-      try {
-        final c1 = Contact(
-          id: 'c1',
-          name: 'Primeiro',
-          createdAt: at,
-          lastTouchDate: OperationalDate(2026, 2, 1),
+    test(
+      'novo contato com lastTouchDate nula não rouba a sugestão já persistida',
+      () async {
+        final database = db.RitmoDatabase(NativeDatabase.memory());
+        final repository = WeeklyContactSuggestionRepository(database);
+        final location = ensureBusinessLocation();
+        final at = tz.TZDateTime.fromMillisecondsSinceEpoch(
+          location,
+          1767225600000,
         );
-        await database.into(database.contacts).insert(
-          db.ContactsCompanion.insert(
-            id: c1.id,
-            name: c1.name,
-            createdAt: c1.createdAt.millisecondsSinceEpoch,
-          ),
-        );
+        final weekStart = OperationalDate(2026, 3, 9);
 
-        await repository.ensureCurrentSuggestion(
-          weekStart: weekStart,
-          orderedContacts: [c1],
-          at: at,
-        );
+        try {
+          final c1 = Contact(
+            id: 'c1',
+            name: 'Primeiro',
+            createdAt: at,
+            lastTouchDate: OperationalDate(2026, 2, 1),
+          );
+          await database
+              .into(database.contacts)
+              .insert(
+                db.ContactsCompanion.insert(
+                  id: c1.id,
+                  name: c1.name,
+                  createdAt: c1.createdAt.millisecondsSinceEpoch,
+                ),
+              );
 
-        // Adiciona c2 que tem touch nulo (maior prioridade em ordem limpa)
-        final c2 = Contact(
-          id: 'c2',
-          name: 'Prioritário',
-          createdAt: at.add(const Duration(seconds: 1)),
-          lastTouchDate: null,
-        );
-        await database.into(database.contacts).insert(
-          db.ContactsCompanion.insert(
-            id: c2.id,
-            name: c2.name,
-            createdAt: c2.createdAt.millisecondsSinceEpoch,
-          ),
-        );
+          await repository.ensureCurrentSuggestion(
+            weekStart: weekStart,
+            orderedContacts: [c1],
+            at: at,
+          );
 
-        final newOrder = ordering.weeklyOrder([c1, c2]);
-        expect(newOrder.first.id, equals('c2')); // Na nova ordem pura, c2 é o primeiro
+          // Adiciona c2 que tem touch nulo (maior prioridade em ordem limpa)
+          final c2 = Contact(
+            id: 'c2',
+            name: 'Prioritário',
+            createdAt: at.add(const Duration(seconds: 1)),
+            lastTouchDate: null,
+          );
+          await database
+              .into(database.contacts)
+              .insert(
+                db.ContactsCompanion.insert(
+                  id: c2.id,
+                  name: c2.name,
+                  createdAt: c2.createdAt.millisecondsSinceEpoch,
+                ),
+              );
 
-        // Mas ensureCurrentSuggestion NÃO substitui c1 pois c1 já está persistido como pending na semana
-        await repository.ensureCurrentSuggestion(
-          weekStart: weekStart,
-          orderedContacts: newOrder,
-          at: at.add(const Duration(hours: 1)),
-        );
+          final newOrder = ordering.weeklyOrder([c1, c2]);
+          expect(
+            newOrder.first.id,
+            equals('c2'),
+          ); // Na nova ordem pura, c2 é o primeiro
 
-        final rows = await (database.select(database.weeklyContactSuggestions)
-              ..where((r) => r.weekStart.equals(weekStart.iso)))
-            .get();
-        final pending = rows.where((r) => r.status == domain.SuggestionStatus.pending.name);
-        expect(pending.length, equals(1));
-        expect(pending.first.contactId, equals('c1'));
-      } finally {
-        await database.close();
-      }
-    });
+          // Mas ensureCurrentSuggestion NÃO substitui c1 pois c1 já está persistido como pending na semana
+          await repository.ensureCurrentSuggestion(
+            weekStart: weekStart,
+            orderedContacts: newOrder,
+            at: at.add(const Duration(hours: 1)),
+          );
+
+          final rows = await (database.select(
+            database.weeklyContactSuggestions,
+          )..where((r) => r.weekStart.equals(weekStart.iso))).get();
+          final pending = rows.where(
+            (r) => r.status == domain.SuggestionStatus.pending.name,
+          );
+          expect(pending.length, equals(1));
+          expect(pending.first.contactId, equals('c1'));
+        } finally {
+          await database.close();
+        }
+      },
+    );
   });
 }

@@ -36,15 +36,18 @@ void main() {
     expect(presentation?.color, FailureCopyColor.neutralGray);
   });
 
-  test('provider não disponibiliza a copy para duas falhas correntes', () async {
-    await database.customStatement(
-      "UPDATE settings SET activation_date = '2026-01-05' WHERE id = 1",
-    );
-    await _insertDay(database, '2026-01-05');
-    await _insertDay(database, '2026-01-06');
+  test(
+    'provider não disponibiliza a copy para duas falhas correntes',
+    () async {
+      await database.customStatement(
+        "UPDATE settings SET activation_date = '2026-01-05' WHERE id = 1",
+      );
+      await _insertDay(database, '2026-01-05');
+      await _insertDay(database, '2026-01-06');
 
-    expect(await _readPresentation(container), isNull);
-  });
+      expect(await _readPresentation(container), isNull);
+    },
+  );
 }
 
 Future<FailureCopyPresentation?> _readPresentation(

@@ -46,10 +46,16 @@ void main() {
     expect(result.isSuccess, expectedAccepted, reason: context);
     result.fold(
       onSuccess: (calendar) {
-        expect(calendar.nightOffset.inMinutes, expectedOffsetMinutes,
-            reason: context);
-        expect(calendar.blockDeadline(date) <= calendar.operationalClose(date),
-            isTrue, reason: context);
+        expect(
+          calendar.nightOffset.inMinutes,
+          expectedOffsetMinutes,
+          reason: context,
+        );
+        expect(
+          calendar.blockDeadline(date) <= calendar.operationalClose(date),
+          isTrue,
+          reason: context,
+        );
       },
       onFailure: (_) => expect(expectedAccepted, isFalse, reason: context),
     );

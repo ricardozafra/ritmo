@@ -88,11 +88,7 @@ void main() {
     );
 
     // Existência: a data calculada contém o instante em uma janela semiaberta.
-    expect(
-      _contains(clock, operationalDate, now),
-      isTrue,
-      reason: context,
-    );
+    expect(_contains(clock, operationalDate, now), isTrue, reason: context);
 
     // Unicidade: como as janelas vizinhas são contíguas, somente uma entre as
     // candidatas ao redor de `d` pode conter o instante.
@@ -104,11 +100,7 @@ void main() {
 
     // RF-05.5: não há lacuna nem sobreposição entre datas consecutivas.
     final close = clock.operationalClose(operationalDate);
-    expect(
-      close,
-      clock.operationalOpen(operationalDate.next),
-      reason: context,
-    );
+    expect(close, clock.operationalOpen(operationalDate.next), reason: context);
     expect(
       input.calendar.operationalClose(operationalDate),
       input.calendar.operationalOpen(operationalDate.next),

@@ -49,20 +49,17 @@ void main() {
           'deadline ${calendar.nightEndTime}, instante $now';
 
       if (now.isBefore(deadline)) {
-        expect(
-          state.actions,
-          const <NightAction>{NightAction.study, NightAction.recovery},
-          reason: context,
-        );
+        expect(state.actions, const <NightAction>{
+          NightAction.study,
+          NightAction.recovery,
+        }, reason: context);
         expect(state.allowsStudy, isTrue, reason: context);
         expect(state.allowsRecovery, isTrue, reason: context);
         expect(state.copy, isNull, reason: context);
       } else if (now.isBefore(close)) {
-        expect(
-          state.actions,
-          const <NightAction>{NightAction.recovery},
-          reason: context,
-        );
+        expect(state.actions, const <NightAction>{
+          NightAction.recovery,
+        }, reason: context);
         expect(state.allowsStudy, isFalse, reason: context);
         expect(state.allowsRecovery, isTrue, reason: context);
         expect(state.copy, Copy.nightRecoveryOnly, reason: context);

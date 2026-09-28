@@ -281,7 +281,11 @@ Future<void> _seedDay(RitmoDatabase database, DayStateFixture fixture) {
   );
 }
 
-const List<String> _watchedTables = ['days', 'pillar_entries', 'weekly_reviews'];
+const List<String> _watchedTables = [
+  'days',
+  'pillar_entries',
+  'weekly_reviews',
+];
 
 const Map<String, String> _orderBy = {
   'days': 'operational_date',
@@ -310,9 +314,8 @@ Future<Map<String, String>> _dump(
   return dump;
 }
 
-Map<String, String> _tablesOf(Map<String, String> dump, List<String> tables) => {
-  for (final table in tables) table: dump[table] ?? '',
-};
+Map<String, String> _tablesOf(Map<String, String> dump, List<String> tables) =>
+    {for (final table in tables) table: dump[table] ?? ''};
 
 Future<Map<String, Object?>> _dayRow(
   RitmoDatabase database,

@@ -5,8 +5,7 @@ import 'days.dart';
 /// Bloco de Estudo sem estado ou duração acumulada.
 class StudyBlocks extends Table {
   TextColumn get id => text()();
-  TextColumn get operationalDate =>
-      text().references(Days, #operationalDate)();
+  TextColumn get operationalDate => text().references(Days, #operationalDate)();
   IntColumn get startedAt => integer()();
   IntColumn get blockDeadline => integer()();
   IntColumn get endedAt => integer().nullable()();

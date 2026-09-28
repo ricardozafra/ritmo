@@ -34,11 +34,22 @@ void main() {
 
   tearDown(() => database.close());
 
-  test('morning and day fields can be undone while open and unsealed', () async {
-    final at = tz.TZDateTime(location, 2026, 5, 4, 9);
-    expect(_success(await commands.setWorkout(date, done: true, at: at)).workoutDone, isTrue);
-    expect(_success(await commands.setWorkout(date, done: false)).workoutDone, isFalse);
-  });
+  test(
+    'morning and day fields can be undone while open and unsealed',
+    () async {
+      final at = tz.TZDateTime(location, 2026, 5, 4, 9);
+      expect(
+        _success(
+          await commands.setWorkout(date, done: true, at: at),
+        ).workoutDone,
+        isTrue,
+      );
+      expect(
+        _success(await commands.setWorkout(date, done: false)).workoutDone,
+        isFalse,
+      );
+    },
+  );
 }
 
 T _success<T, F extends RitmoFailure>(Result<T, F> result) => result.fold(

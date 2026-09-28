@@ -8,10 +8,11 @@ void main() {
   final activation = OperationalDate(2026, 1, 1);
 
   test('detecta a sequência e deriva a geração da primeira data', () {
-    final sequence = detector.detect(
-      [_day(5), _day(6), _day(7)],
-      activation,
-    ).single;
+    final sequence = detector.detect([
+      _day(5),
+      _day(6),
+      _day(7),
+    ], activation).single;
 
     expect(sequence.generationId, 'seq:2026-01-05');
     expect(sequence.startDate, OperationalDate(2026, 1, 5));
@@ -20,15 +21,12 @@ void main() {
   });
 
   test('ignora dias mute entre sexta e a segunda útil seguinte', () {
-    final sequence = detector.detect(
-      [
-        _day(2),
-        _day(3, mute: true, workday: false),
-        _day(4, mute: true, workday: false),
-        _day(5),
-      ],
-      activation,
-    ).single;
+    final sequence = detector.detect([
+      _day(2),
+      _day(3, mute: true, workday: false),
+      _day(4, mute: true, workday: false),
+      _day(5),
+    ], activation).single;
 
     expect(sequence.startDate, OperationalDate(2026, 1, 2));
     expect(sequence.endDate, OperationalDate(2026, 1, 5));
@@ -36,16 +34,13 @@ void main() {
   });
 
   test('ignora pré-ativação e dia selado parte sequências', () {
-    final sequences = detector.detect(
-      [
-        _day(5),
-        _day(6),
-        _day(7, sealed: true),
-        _day(8),
-        _day(9),
-      ],
-      OperationalDate(2026, 1, 6),
-    );
+    final sequences = detector.detect([
+      _day(5),
+      _day(6),
+      _day(7, sealed: true),
+      _day(8),
+      _day(9),
+    ], OperationalDate(2026, 1, 6));
 
     expect(sequences, hasLength(1));
     expect(sequences.single.generationId, 'seq:2026-01-08');
@@ -66,10 +61,11 @@ void main() {
   });
 
   test('dia aberto não conta como falha nem apaga sequência já encerrada', () {
-    final sequences = detector.detect(
-      [_day(5), _day(6), _day(7, closed: false)],
-      activation,
-    );
+    final sequences = detector.detect([
+      _day(5),
+      _day(6),
+      _day(7, closed: false),
+    ], activation);
 
     expect(sequences, hasLength(1));
     expect(sequences.single.length, 2);

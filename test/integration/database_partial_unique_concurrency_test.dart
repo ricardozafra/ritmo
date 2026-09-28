@@ -43,7 +43,8 @@ void main() {
     () => _withSharedDatabase((first, second) async {
       await _insertOpenDay(first, '2026-05-04');
       await _insertOpenDay(first, '2026-05-05');
-      const sql = 'INSERT INTO protocol_alarms '
+      const sql =
+          'INSERT INTO protocol_alarms '
           '(id, generation_id, start_date, end_date, sequence_length, state) '
           'VALUES (?, ?, ?, ?, ?, ?)';
       final results = await _raceInserts([
@@ -81,7 +82,8 @@ void main() {
   test(
     'RD-25: concurrent inserts keep one active change initiative',
     () => _withSharedDatabase((first, second) async {
-      const sql = 'INSERT INTO change_initiatives (id, name, active) '
+      const sql =
+          'INSERT INTO change_initiatives (id, name, active) '
           'VALUES (?, ?, 1)';
       final results = await _raceInserts([
         () => first.customStatement(sql, ['initiative-1', 'Primeira']),
@@ -89,10 +91,7 @@ void main() {
       ]);
 
       _expectOneUniqueWinner(results);
-      expect(
-        await _count(first, 'change_initiatives', 'active = 1'),
-        1,
-      );
+      expect(await _count(first, 'change_initiatives', 'active = 1'), 1);
     }),
   );
 
@@ -102,7 +101,8 @@ void main() {
       await first.customStatement(
         "UPDATE cycles SET state = 'archived' WHERE state = 'active'",
       );
-      const sql = 'INSERT INTO cycles '
+      const sql =
+          'INSERT INTO cycles '
           '(id, name, purpose_text, start_date, end_date, state) '
           "VALUES (?, ?, ?, ?, ?, 'active')";
       final results = await _raceInserts([
@@ -132,9 +132,7 @@ Future<void> _withSharedDatabase(
   Future<void> Function(RitmoDatabase first, RitmoDatabase second) body,
 ) async {
   final directory = await Directory.systemTemp.createTemp('ritmo_constraints_');
-  final file = File(
-    '${directory.path}${Platform.pathSeparator}ritmo.sqlite',
-  );
+  final file = File('${directory.path}${Platform.pathSeparator}ritmo.sqlite');
   final first = RitmoDatabase(NativeDatabase(file));
   RitmoDatabase? second;
 
@@ -156,19 +154,22 @@ Future<List<Object?>> _raceInserts(
   List<Future<void> Function()> inserts,
 ) async {
   final start = Completer<void>();
-  final attempts = inserts.map((insert) async {
-    await start.future;
-    try {
-      await insert();
-      return null;
-    } catch (error) {
-      return error;
-    }
-  }).toList(growable: false);
+  final attempts = inserts
+      .map((insert) async {
+        await start.future;
+        try {
+          await insert();
+          return null;
+        } catch (error) {
+          return error;
+        }
+      })
+      .toList(growable: false);
 
   start.complete();
   return Future.wait(attempts);
 }
+
 void _expectOneUniqueWinner(List<Object?> results) {
   expect(results.where((result) => result == null), hasLength(1));
   final failures = results.whereType<Object>().toList(growable: false);
@@ -191,10 +192,7 @@ Future<int> _count(
   return row.read<int>('count');
 }
 
-Future<void> _insertOpenDay(
-  RitmoDatabase database,
-  String operationalDate,
-) {
+Future<void> _insertOpenDay(RitmoDatabase database, String operationalDate) {
   return database.customStatement(
     'INSERT INTO days '
     '(operational_date, base_result, effective_result) '

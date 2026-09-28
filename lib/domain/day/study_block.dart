@@ -59,10 +59,13 @@ final class StudyBlock {
         ),
       );
     }
-    return Result.success(_withEnd(at.isBefore(blockDeadline) ? at : blockDeadline));
+    return Result.success(
+      _withEnd(at.isBefore(blockDeadline) ? at : blockDeadline),
+    );
   }
 
-  StudyBlock closeAtDeadline() => endedAt == null ? _withEnd(blockDeadline) : this;
+  StudyBlock closeAtDeadline() =>
+      endedAt == null ? _withEnd(blockDeadline) : this;
 
   StudyBlock _withEnd(tz.TZDateTime value) => StudyBlock(
     id: id,

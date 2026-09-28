@@ -35,10 +35,7 @@ final Generator<_EvalFixture> _anyEvalFixture = any.simple(
       cpList.add((monthOffset: offset, day: day, competency: comp));
     }
 
-    return (
-      reviewWeekStart: weekStart,
-      checkpointsData: cpList,
-    );
+    return (reviewWeekStart: weekStart, checkpointsData: cpList);
   },
   shrink: (fixture) sync* {},
 );
@@ -57,7 +54,8 @@ void main() {
     for (var i = 0; i < fixture.checkpointsData.length; i++) {
       final data = fixture.checkpointsData[i];
       // Calcula ano e mês aplicando o offset
-      final totalMonths = (weekStart.year * 12 + (weekStart.month - 1)) + data.monthOffset;
+      final totalMonths =
+          (weekStart.year * 12 + (weekStart.month - 1)) + data.monthOffset;
       final year = totalMonths ~/ 12;
       final month = (totalMonths % 12) + 1;
       final cpDate = OperationalDate(year, month, data.day);
@@ -78,13 +76,15 @@ void main() {
 
     // Invariante 1: Um checkpoint é incluído se e somente se pertence ao mesmo ano e mês civil
     for (final cp in checkpoints) {
-      final isSameCivilMonth = (cp.date.year == weekStart.year && cp.date.month == weekStart.month);
+      final isSameCivilMonth =
+          (cp.date.year == weekStart.year && cp.date.month == weekStart.month);
       final isIncluded = eligible.any((e) => e.id == cp.id);
 
       expect(
         isIncluded,
         equals(isSameCivilMonth),
-        reason: 'Checkpoint ${cp.date.iso} vs Review ${weekStart.iso}: '
+        reason:
+            'Checkpoint ${cp.date.iso} vs Review ${weekStart.iso}: '
             'mesmo mês=$isSameCivilMonth mas incluído=$isIncluded',
       );
     }
@@ -109,20 +109,23 @@ void main() {
       expect(GartnerLevel.fromWire('SENIOR'), isNull);
     });
 
-    test('tabela checkpoint_evals rejeita níveis fora do domínio no SQLite', () async {
-      final database = db.RitmoDatabase(NativeDatabase.memory());
+    test(
+      'tabela checkpoint_evals rejeita níveis fora do domínio no SQLite',
+      () async {
+        final database = db.RitmoDatabase(NativeDatabase.memory());
 
-      try {
-        expect(
-          () => database.customStatement(
-            "INSERT INTO checkpoint_evals (id, checkpoint_id, gartner_level) "
-            "VALUES ('eval-invalid', 'checkpoint-seed-innovative', 'INVALID')",
-          ),
-          throwsA(isA<Exception>()),
-        );
-      } finally {
-        await database.close();
-      }
-    });
+        try {
+          expect(
+            () => database.customStatement(
+              "INSERT INTO checkpoint_evals (id, checkpoint_id, gartner_level) "
+              "VALUES ('eval-invalid', 'checkpoint-seed-innovative', 'INVALID')",
+            ),
+            throwsA(isA<Exception>()),
+          );
+        } finally {
+          await database.close();
+        }
+      },
+    );
   });
 }

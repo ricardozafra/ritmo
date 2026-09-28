@@ -32,17 +32,13 @@ void main() {
         lf.replaceAll('\n', '\r\n'),
         lf.replaceAll('\n', '\r'),
       ]) {
-        expect(
-          parser.findOathInMarkdown(markdown),
-          const LineRange(3, 5),
-        );
+        expect(parser.findOathInMarkdown(markdown), const LineRange(3, 5));
       }
     });
 
     test('aceita a API de linhas e remove CR residual de conteúdo CRLF', () {
-      final lines =
-          '## IV. O JURAMENTO INTERNO\r\n\r\n> juramento\r\ntexto'
-              .split('\n');
+      final lines = '## IV. O JURAMENTO INTERNO\r\n\r\n> juramento\r\ntexto'
+          .split('\n');
 
       expect(parser.findOath(lines), const LineRange(2, 3));
     });
@@ -58,14 +54,17 @@ void main() {
       }
     });
 
-    test('retorna null quando o primeiro conteúdo posterior não é blockquote', () {
-      const markdown = '''## IV. O JURAMENTO INTERNO
+    test(
+      'retorna null quando o primeiro conteúdo posterior não é blockquote',
+      () {
+        const markdown = '''## IV. O JURAMENTO INTERNO
 
 texto comum
 > bloco posterior''';
 
-      expect(parser.findOathInMarkdown(markdown), isNull);
-    });
+        expect(parser.findOathInMarkdown(markdown), isNull);
+      },
+    );
 
     test('a primeira ocorrência exata governa mesmo se outra seria válida', () {
       const markdown = '''## IV. O JURAMENTO INTERNO
@@ -77,12 +76,15 @@ texto comum
       expect(parser.findOathInMarkdown(markdown), isNull);
     });
 
-    test('retorna null para documento vazio ou heading sem conteúdo posterior', () {
-      expect(parser.findOathInMarkdown(''), isNull);
-      expect(
-        parser.findOathInMarkdown('## IV. O JURAMENTO INTERNO\n \t'),
-        isNull,
-      );
-    });
+    test(
+      'retorna null para documento vazio ou heading sem conteúdo posterior',
+      () {
+        expect(parser.findOathInMarkdown(''), isNull);
+        expect(
+          parser.findOathInMarkdown('## IV. O JURAMENTO INTERNO\n \t'),
+          isNull,
+        );
+      },
+    );
   });
 }

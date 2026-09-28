@@ -46,21 +46,24 @@ void main() {
     expect(pragma.read<int>('foreign_keys'), 1);
   });
 
-  test('settings accepts only the seeded singleton and fixed timezone', () async {
-    final seeded = await database.select(database.settings).getSingle();
-    expect(seeded.id, 1);
+  test(
+    'settings accepts only the seeded singleton and fixed timezone',
+    () async {
+      final seeded = await database.select(database.settings).getSingle();
+      expect(seeded.id, 1);
 
-    await expectLater(
-      database.customStatement('INSERT INTO settings (id) VALUES (2)'),
-      throwsA(isA<Exception>()),
-    );
-    await expectLater(
-      database.customStatement(
-        "UPDATE settings SET business_timezone = 'UTC' WHERE id = 1",
-      ),
-      throwsA(isA<Exception>()),
-    );
-  });
+      await expectLater(
+        database.customStatement('INSERT INTO settings (id) VALUES (2)'),
+        throwsA(isA<Exception>()),
+      );
+      await expectLater(
+        database.customStatement(
+          "UPDATE settings SET business_timezone = 'UTC' WHERE id = 1",
+        ),
+        throwsA(isA<Exception>()),
+      );
+    },
+  );
 
   test('rejects foreign keys to an absent operational day', () async {
     await expectLater(

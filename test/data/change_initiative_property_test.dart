@@ -31,7 +31,8 @@ final Generator<List<_Command>> _anyInitiativeCommands = any.simple(
       ...List.generate(
         tailLength,
         (_) => (
-          operation: _Operation.values[random.nextInt(_Operation.values.length)],
+          operation:
+              _Operation.values[random.nextInt(_Operation.values.length)],
           slot: random.nextInt(8),
         ),
       ),
@@ -52,7 +53,9 @@ void main() {
         .map((command) => '${command.operation.name}(${command.slot})')
         .join(' > ');
 
-    Future<List<domain.ChangeInitiative>> expectSingleActive(String step) async {
+    Future<List<domain.ChangeInitiative>> expectSingleActive(
+      String step,
+    ) async {
       final all = await repository.all();
       final active = all.where((initiative) => initiative.active).toList();
       expect(active.length, lessThanOrEqualTo(1), reason: '$sequence / $step');
@@ -71,13 +74,18 @@ void main() {
         final id = 'initiative-${command.slot}';
         switch (command.operation) {
           case _Operation.createAndActivate:
-            await repository.createAndActivate(id: id, name: 'Iniciativa ${command.slot}');
+            await repository.createAndActivate(
+              id: id,
+              name: 'Iniciativa ${command.slot}',
+            );
             break;
           case _Operation.changeActive:
             await repository.changeActive(id);
             break;
         }
-        await expectSingleActive('passo $index: ${command.operation.name}($id)');
+        await expectSingleActive(
+          'passo $index: ${command.operation.name}($id)',
+        );
       }
 
       // RD-25 também protege a invariável abaixo da API do repositório.

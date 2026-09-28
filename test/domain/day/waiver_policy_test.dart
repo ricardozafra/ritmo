@@ -67,10 +67,7 @@ void main() {
   test('rejeita segunda dispensa ativa na mesma data operacional', () {
     final active = waiver(id: 'active', waiverDate: date);
 
-    final result = policy.create(
-      command(),
-      DayContext(activeWaiver: active),
-    );
+    final result = policy.create(command(), DayContext(activeWaiver: active));
 
     expect(result, isA<Failure<PillarWaiver, WaiverViolation>>());
     expect(
@@ -85,10 +82,7 @@ void main() {
       waiverDate: date,
       revokedAt: tz.TZDateTime(tz.UTC, 2026, 3, 9, 12),
     );
-    final anotherDate = waiver(
-      id: 'another-date',
-      waiverDate: date.previous,
-    );
+    final anotherDate = waiver(id: 'another-date', waiverDate: date.previous);
 
     final result = policy.create(
       command(),

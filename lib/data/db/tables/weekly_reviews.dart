@@ -19,7 +19,9 @@ class WeeklyReviews extends Table {
   Set<Column<Object>> get primaryKey => {id};
 
   @override
-  List<Set<Column<Object>>> get uniqueKeys => [{weekStart}];
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {weekStart},
+  ];
 
   @override
   List<String> get customConstraints => const [

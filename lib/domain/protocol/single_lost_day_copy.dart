@@ -20,11 +20,10 @@ final class FailureCopyPresentation {
 final class SingleLostDayCopyDeriver {
   const SingleLostDayCopyDeriver();
 
-  static const FailureCopyPresentation _singleLostDay =
-      FailureCopyPresentation(
-        text: Copy.singleLostDay,
-        color: FailureCopyColor.neutralGray,
-      );
+  static const FailureCopyPresentation _singleLostDay = FailureCopyPresentation(
+    text: Copy.singleLostDay,
+    color: FailureCopyColor.neutralGray,
+  );
 
   /// Retorna a copy somente quando a sequência corrente tem um único dia útil
   /// elegível, encerrado e não selado.

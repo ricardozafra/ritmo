@@ -89,10 +89,12 @@ void main() {
     expect(
       isWithinWindow,
       equals(inBlackoutInterval),
-      reason: 'isWithinBlackoutWindow deve ser exato com o intervalo do fim de semana até a abertura de segunda',
+      reason:
+          'isWithinBlackoutWindow deve ser exato com o intervalo do fim de semana até a abertura de segunda',
     );
 
-    final isSundayOptInMoment = weekday == DateTime.sunday &&
+    final isSundayOptInMoment =
+        weekday == DateTime.sunday &&
         civil.time >= const LocalTimeOfDay(20, 0) &&
         civil.time <= const LocalTimeOfDay(22, 0);
 
@@ -113,38 +115,52 @@ void main() {
   });
 
   group('Propriedade 28: Casos de borda da abertura de segunda-feira', () {
-    test('segunda-feira 1 minuto antes da abertura operacional está em blackout', () {
-      final calendar = const OperationalCalendar(
-        dayCloseTime: LocalTimeOfDay(3, 30),
-        nightEndTime: LocalTimeOfDay(23, 0),
-      );
-      final clock = SystemOperationalClock(calendar: calendar);
-      final policy = BlackoutPolicy(clock);
-      final location = ensureBusinessLocation();
+    test(
+      'segunda-feira 1 minuto antes da abertura operacional está em blackout',
+      () {
+        final calendar = const OperationalCalendar(
+          dayCloseTime: LocalTimeOfDay(3, 30),
+          nightEndTime: LocalTimeOfDay(23, 0),
+        );
+        final clock = SystemOperationalClock(calendar: calendar);
+        final policy = BlackoutPolicy(clock);
+        final location = ensureBusinessLocation();
 
-      // Segunda-feira 03:29
-      final mondayDawn = tz.TZDateTime(location, 2026, 3, 9, 3, 29);
-      expect(policy.isWithinBlackoutWindow(mondayDawn), isTrue);
-      expect(policy.isBlocked(mondayDawn, sundayExceptionEnabled: true), isTrue);
-    });
+        // Segunda-feira 03:29
+        final mondayDawn = tz.TZDateTime(location, 2026, 3, 9, 3, 29);
+        expect(policy.isWithinBlackoutWindow(mondayDawn), isTrue);
+        expect(
+          policy.isBlocked(mondayDawn, sundayExceptionEnabled: true),
+          isTrue,
+        );
+      },
+    );
 
-    test('segunda-feira exatamente na abertura operacional NÃO está em blackout', () {
-      final calendar = const OperationalCalendar(
-        dayCloseTime: LocalTimeOfDay(3, 30),
-        nightEndTime: LocalTimeOfDay(23, 0),
-      );
-      final clock = SystemOperationalClock(calendar: calendar);
-      final policy = BlackoutPolicy(clock);
-      final location = ensureBusinessLocation();
+    test(
+      'segunda-feira exatamente na abertura operacional NÃO está em blackout',
+      () {
+        final calendar = const OperationalCalendar(
+          dayCloseTime: LocalTimeOfDay(3, 30),
+          nightEndTime: LocalTimeOfDay(23, 0),
+        );
+        final clock = SystemOperationalClock(calendar: calendar);
+        final policy = BlackoutPolicy(clock);
+        final location = ensureBusinessLocation();
 
-      // Segunda-feira 03:30 (operationalOpen)
-      final mondayOpen = tz.TZDateTime(location, 2026, 3, 9, 3, 30);
-      expect(policy.isWithinBlackoutWindow(mondayOpen), isFalse);
-      expect(policy.isBlocked(mondayOpen, sundayExceptionEnabled: true), isFalse);
-    });
+        // Segunda-feira 03:30 (operationalOpen)
+        final mondayOpen = tz.TZDateTime(location, 2026, 3, 9, 3, 30);
+        expect(policy.isWithinBlackoutWindow(mondayOpen), isFalse);
+        expect(
+          policy.isBlocked(mondayOpen, sundayExceptionEnabled: true),
+          isFalse,
+        );
+      },
+    );
 
     test('exceção dominical cobre 20:00 e 22:00 inclusivos', () {
-      final clock = SystemOperationalClock(calendar: const OperationalCalendar.seed());
+      final clock = SystemOperationalClock(
+        calendar: const OperationalCalendar.seed(),
+      );
       final policy = BlackoutPolicy(clock);
       final location = ensureBusinessLocation();
 

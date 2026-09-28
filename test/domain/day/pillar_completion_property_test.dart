@@ -121,7 +121,10 @@ void main() {
     }
     expect(
       PillarRules.nightCompleted(
-        NightEntry(kind: NightKind.recovery, recoveryNote: fixture.recoveryNote),
+        NightEntry(
+          kind: NightKind.recovery,
+          recoveryNote: fixture.recoveryNote,
+        ),
         linkedStudyEnded: false,
       ),
       isTrue,

@@ -24,11 +24,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import '../../generators/shared.dart';
 
-typedef _SpaceFixture = ({
-  int freeBytes,
-  AudioKind kind,
-  int audioDurationMs,
-});
+typedef _SpaceFixture = ({int freeBytes, AudioKind kind, int audioDurationMs});
 
 final Generator<_SpaceFixture> _anySpaceFixture = any.simple(
   generate: (random, size) {
@@ -37,11 +33,7 @@ final Generator<_SpaceFixture> _anySpaceFixture = any.simple(
     final kind = AudioKind.values[random.nextInt(AudioKind.values.length)];
     final durationMs = 1000 + random.nextInt(40 * 60 * 1000);
 
-    return (
-      freeBytes: freeBytes,
-      kind: kind,
-      audioDurationMs: durationMs,
-    );
+    return (freeBytes: freeBytes, kind: kind, audioDurationMs: durationMs);
   },
   shrink: (value) sync* {},
 );
@@ -80,22 +72,27 @@ void main() {
           );
 
           // Insere previamente um áudio válido para garantir que não seja corrompido
-          final initialAudioFile = File('${tempDir.path}/audio/initial_valid.m4a');
+          final initialAudioFile = File(
+            '${tempDir.path}/audio/initial_valid.m4a',
+          );
           await initialAudioFile.parent.create(recursive: true);
           await initialAudioFile.writeAsString('CONTEUDO_ANTERIOR_VALIDO');
 
-          await database.into(database.audioAssets).insert(
-            db.AudioAssetsCompanion.insert(
-              id: 'initial-audio-id',
-              relativePath: 'audio/initial_valid.m4a',
-              kind: AudioKind.dayNote.wireValue,
-              durationMs: 60000,
-              byteSize: 26,
-              createdAt: now.millisecondsSinceEpoch,
-            ),
-          );
+          await database
+              .into(database.audioAssets)
+              .insert(
+                db.AudioAssetsCompanion.insert(
+                  id: 'initial-audio-id',
+                  relativePath: 'audio/initial_valid.m4a',
+                  kind: AudioKind.dayNote.wireValue,
+                  durationMs: 60000,
+                  byteSize: 26,
+                  createdAt: now.millisecondsSinceEpoch,
+                ),
+              );
 
-          final initialAssetsCount = (await database.select(database.audioAssets).get()).length;
+          final initialAssetsCount =
+              (await database.select(database.audioAssets).get()).length;
 
           final sampleBytes = List<int>.generate(1024, (i) => i % 256);
           final relativePath = 'audio/test-attempt-${fixture.freeBytes}.m4a';
@@ -111,12 +108,18 @@ void main() {
           if (!hasSpace) {
             // Se espaço é insuficiente, deve falhar com código específico e mensagem neutra
             expect(result.isFailure, isTrue);
-            final failure = (result as Failure<AudioAssetRecord, AudioFailure>).failure;
+            final failure =
+                (result as Failure<AudioAssetRecord, AudioFailure>).failure;
             expect(failure.code, equals('insufficient_space'));
-            expect(failure.message, equals('Espaço de armazenamento insuficiente.'));
+            expect(
+              failure.message,
+              equals('Espaço de armazenamento insuficiente.'),
+            );
 
             // Nenhum novo registro adicionado ao banco
-            final currentAssets = await database.select(database.audioAssets).get();
+            final currentAssets = await database
+                .select(database.audioAssets)
+                .get();
             expect(currentAssets.length, equals(initialAssetsCount));
 
             // Nenhum arquivo residual criado
@@ -125,11 +128,15 @@ void main() {
 
             // Arquivo e metadados anteriores permanecem íntegros
             expect(await initialAudioFile.exists(), isTrue);
-            expect(await initialAudioFile.readAsString(), equals('CONTEUDO_ANTERIOR_VALIDO'));
+            expect(
+              await initialAudioFile.readAsString(),
+              equals('CONTEUDO_ANTERIOR_VALIDO'),
+            );
           } else {
             // Se espaço suficiente, gravação é bem sucedida
             expect(result.isSuccess, isTrue);
-            final record = (result as Success<AudioAssetRecord, AudioFailure>).value;
+            final record =
+                (result as Success<AudioAssetRecord, AudioFailure>).value;
             final file = await repo.getAudioFile(record.relativePath);
             expect(file, isNotNull);
             expect(await file!.exists(), isTrue);
@@ -178,9 +185,13 @@ void main() {
           if (fixture.freeBytes < requiredBytes) {
             // Falha com mensagem neutra
             expect(result.isFailure, isTrue);
-            final failure = (result as Failure<ExportPackageResult, ExportFailure>).failure;
+            final failure =
+                (result as Failure<ExportPackageResult, ExportFailure>).failure;
             expect(failure.code, equals('insufficient_space'));
-            expect(failure.message, equals('Espaço de armazenamento insuficiente.'));
+            expect(
+              failure.message,
+              equals('Espaço de armazenamento insuficiente.'),
+            );
 
             // Nenhum pacote publicado ou pasta de staging mantida no diretório de destino
             final contents = targetExportDir.listSync();
@@ -188,7 +199,8 @@ void main() {
           } else {
             // Sucesso na exportação
             expect(result.isSuccess, isTrue);
-            final packageResult = (result as Success<ExportPackageResult, ExportFailure>).value;
+            final packageResult =
+                (result as Success<ExportPackageResult, ExportFailure>).value;
             expect(await packageResult.exportDirectory.exists(), isTrue);
             expect(await packageResult.jsonFile.exists(), isTrue);
           }

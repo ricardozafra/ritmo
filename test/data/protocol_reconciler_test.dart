@@ -16,48 +16,54 @@ void main() {
 
   tearDown(() => database.close());
 
-  test('two closed unsealed workdays create exactly one pending protocol', () async {
-    await _activate(database, '2026-01-05');
-    await _insertDay(database, '2026-01-05');
-    await _insertDay(database, '2026-01-06');
+  test(
+    'two closed unsealed workdays create exactly one pending protocol',
+    () async {
+      await _activate(database, '2026-01-05');
+      await _insertDay(database, '2026-01-05');
+      await _insertDay(database, '2026-01-06');
 
-    final report = await reconciler.reconcileProtocols(
-      from: OperationalDate(2026, 1, 6),
-    );
-    final protocols = await _protocols(database);
+      final report = await reconciler.reconcileProtocols(
+        from: OperationalDate(2026, 1, 6),
+      );
+      final protocols = await _protocols(database);
 
-    expect(report.created, ['seq:2026-01-05']);
-    expect(protocols, hasLength(1));
-    expect(protocols.single.generationId, 'seq:2026-01-05');
-    expect(protocols.single.startDate, '2026-01-05');
-    expect(protocols.single.endDate, '2026-01-06');
-    expect(protocols.single.sequenceLength, 2);
-    expect(protocols.single.state, 'pending');
-    expect(protocols.single.previousState, isNull);
-  });
+      expect(report.created, ['seq:2026-01-05']);
+      expect(protocols, hasLength(1));
+      expect(protocols.single.generationId, 'seq:2026-01-05');
+      expect(protocols.single.startDate, '2026-01-05');
+      expect(protocols.single.endDate, '2026-01-06');
+      expect(protocols.single.sequenceLength, 2);
+      expect(protocols.single.state, 'pending');
+      expect(protocols.single.previousState, isNull);
+    },
+  );
 
-  test('growth expands to the sequence start and updates the same protocol', () async {
-    await _activate(database, '2026-01-05');
-    await _insertDay(database, '2026-01-05');
-    await _insertDay(database, '2026-01-06');
-    await reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 6));
-    final firstId = (await _protocols(database)).single.id;
+  test(
+    'growth expands to the sequence start and updates the same protocol',
+    () async {
+      await _activate(database, '2026-01-05');
+      await _insertDay(database, '2026-01-05');
+      await _insertDay(database, '2026-01-06');
+      await reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 6));
+      final firstId = (await _protocols(database)).single.id;
 
-    await _insertDay(database, '2026-01-07');
-    await _insertDay(database, '2026-01-08');
-    final report = await reconciler.reconcileProtocols(
-      from: OperationalDate(2026, 1, 8),
-    );
-    final protocols = await _protocols(database);
+      await _insertDay(database, '2026-01-07');
+      await _insertDay(database, '2026-01-08');
+      final report = await reconciler.reconcileProtocols(
+        from: OperationalDate(2026, 1, 8),
+      );
+      final protocols = await _protocols(database);
 
-    expect(report.scopeStart, OperationalDate(2026, 1, 5));
-    expect(report.created, isEmpty);
-    expect(report.updated, ['seq:2026-01-05']);
-    expect(protocols, hasLength(1));
-    expect(protocols.single.id, firstId);
-    expect(protocols.single.sequenceLength, 4);
-    expect(protocols.single.endDate, '2026-01-08');
-  });
+      expect(report.scopeStart, OperationalDate(2026, 1, 5));
+      expect(report.created, isEmpty);
+      expect(report.updated, ['seq:2026-01-05']);
+      expect(protocols, hasLength(1));
+      expect(protocols.single.id, firstId);
+      expect(protocols.single.sequenceLength, 4);
+      expect(protocols.single.endDate, '2026-01-08');
+    },
+  );
 
   test('repeating the reconciliation changes nothing', () async {
     await _activate(database, '2026-01-05');
@@ -72,97 +78,109 @@ void main() {
     expect(await _protocols(database), before);
   });
 
-  test('weekend mute days keep friday and monday in the same sequence', () async {
-    await _activate(database, '2026-01-09');
-    await _insertDay(database, '2026-01-09');
-    await _insertDay(database, '2026-01-10', muteCause: 'weekend');
-    await _insertDay(database, '2026-01-11', muteCause: 'weekend');
-    await _insertDay(database, '2026-01-12');
+  test(
+    'weekend mute days keep friday and monday in the same sequence',
+    () async {
+      await _activate(database, '2026-01-09');
+      await _insertDay(database, '2026-01-09');
+      await _insertDay(database, '2026-01-10', muteCause: 'weekend');
+      await _insertDay(database, '2026-01-11', muteCause: 'weekend');
+      await _insertDay(database, '2026-01-12');
 
-    await reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 12));
-    final protocols = await _protocols(database);
+      await reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 12));
+      final protocols = await _protocols(database);
 
-    expect(protocols, hasLength(1));
-    expect(protocols.single.startDate, '2026-01-09');
-    expect(protocols.single.endDate, '2026-01-12');
-    expect(protocols.single.sequenceLength, 2);
-  });
+      expect(protocols, hasLength(1));
+      expect(protocols.single.startDate, '2026-01-09');
+      expect(protocols.single.endDate, '2026-01-12');
+      expect(protocols.single.sequenceLength, 2);
+    },
+  );
 
-  test('losing the criterion invalidates and preserves state and data', () async {
-    await _activate(database, '2026-01-05');
-    await _insertDay(database, '2026-01-05');
-    await _insertDay(database, '2026-01-06');
-    await reconciler.reconcileProtocols();
-    await _answer(database, (await _protocols(database)).single.id);
+  test(
+    'losing the criterion invalidates and preserves state and data',
+    () async {
+      await _activate(database, '2026-01-05');
+      await _insertDay(database, '2026-01-05');
+      await _insertDay(database, '2026-01-06');
+      await reconciler.reconcileProtocols();
+      await _answer(database, (await _protocols(database)).single.id);
 
-    await _applyHoliday(database, '2026-01-06');
-    final report = await reconciler.reconcileProtocols(
-      from: OperationalDate(2026, 1, 6),
-    );
-    final protocols = await _protocols(database);
+      await _applyHoliday(database, '2026-01-06');
+      final report = await reconciler.reconcileProtocols(
+        from: OperationalDate(2026, 1, 6),
+      );
+      final protocols = await _protocols(database);
 
-    expect(report.invalidated, ['seq:2026-01-05']);
-    expect(protocols, hasLength(1));
-    expect(protocols.single.state, 'invalidated');
-    expect(protocols.single.previousState, 'answered');
-    expect(protocols.single.cause, 'Agenda sobrecarregada');
-    expect(protocols.single.adjustment, 'Reduzir compromissos da noite');
-    expect(protocols.single.planOrExecution, 'plan');
-    expect(protocols.single.triggeredAt, 1767657600000);
-    expect(protocols.single.sequenceLength, 2);
-    expect(protocols.single.endDate, '2026-01-06');
-  });
+      expect(report.invalidated, ['seq:2026-01-05']);
+      expect(protocols, hasLength(1));
+      expect(protocols.single.state, 'invalidated');
+      expect(protocols.single.previousState, 'answered');
+      expect(protocols.single.cause, 'Agenda sobrecarregada');
+      expect(protocols.single.adjustment, 'Reduzir compromissos da noite');
+      expect(protocols.single.planOrExecution, 'plan');
+      expect(protocols.single.triggeredAt, 1767657600000);
+      expect(protocols.single.sequenceLength, 2);
+      expect(protocols.single.endDate, '2026-01-06');
+    },
+  );
 
-  test('restored sequence gets a new protocol and never reactivates the old one', () async {
-    await _activate(database, '2026-01-05');
-    await _insertDay(database, '2026-01-05');
-    await _insertDay(database, '2026-01-06');
-    await reconciler.reconcileProtocols();
-    final originalId = (await _protocols(database)).single.id;
-    await _applyHoliday(database, '2026-01-06');
-    await reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 6));
+  test(
+    'restored sequence gets a new protocol and never reactivates the old one',
+    () async {
+      await _activate(database, '2026-01-05');
+      await _insertDay(database, '2026-01-05');
+      await _insertDay(database, '2026-01-06');
+      await reconciler.reconcileProtocols();
+      final originalId = (await _protocols(database)).single.id;
+      await _applyHoliday(database, '2026-01-06');
+      await reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 6));
 
-    await _removeHoliday(database, '2026-01-06');
-    final report = await reconciler.reconcileProtocols(
-      from: OperationalDate(2026, 1, 6),
-    );
-    final protocols = await _protocols(database);
+      await _removeHoliday(database, '2026-01-06');
+      final report = await reconciler.reconcileProtocols(
+        from: OperationalDate(2026, 1, 6),
+      );
+      final protocols = await _protocols(database);
 
-    expect(report.created, ['seq:2026-01-05']);
-    expect(protocols, hasLength(2));
-    final original = protocols.firstWhere((row) => row.id == originalId);
-    final restored = protocols.firstWhere((row) => row.id != originalId);
-    expect(original.state, 'invalidated');
-    expect(original.previousState, 'pending');
-    expect(restored.state, 'pending');
-    expect(restored.previousState, isNull);
-    expect(restored.generationId, original.generationId);
-    expect(restored.sequenceLength, 2);
-  });
+      expect(report.created, ['seq:2026-01-05']);
+      expect(protocols, hasLength(2));
+      final original = protocols.firstWhere((row) => row.id == originalId);
+      final restored = protocols.firstWhere((row) => row.id != originalId);
+      expect(original.state, 'invalidated');
+      expect(original.previousState, 'pending');
+      expect(restored.state, 'pending');
+      expect(restored.previousState, isNull);
+      expect(restored.generationId, original.generationId);
+      expect(restored.sequenceLength, 2);
+    },
+  );
 
-  test('concurrent reconciliations converge to one protocol with the right length', () async {
-    await _activate(database, '2026-01-05');
-    for (final day in const [
-      '2026-01-05',
-      '2026-01-06',
-      '2026-01-07',
-      '2026-01-08',
-    ]) {
-      await _insertDay(database, day);
-    }
+  test(
+    'concurrent reconciliations converge to one protocol with the right length',
+    () async {
+      await _activate(database, '2026-01-05');
+      for (final day in const [
+        '2026-01-05',
+        '2026-01-06',
+        '2026-01-07',
+        '2026-01-08',
+      ]) {
+        await _insertDay(database, day);
+      }
 
-    await Future.wait([
-      reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 8)),
-      reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 8)),
-      ProtocolReconciler(database).reconcileProtocols(),
-    ]);
-    final protocols = await _protocols(database);
+      await Future.wait([
+        reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 8)),
+        reconciler.reconcileProtocols(from: OperationalDate(2026, 1, 8)),
+        ProtocolReconciler(database).reconcileProtocols(),
+      ]);
+      final protocols = await _protocols(database);
 
-    expect(protocols, hasLength(1));
-    expect(protocols.single.state, 'pending');
-    expect(protocols.single.sequenceLength, 4);
-    expect(protocols.single.endDate, '2026-01-08');
-  });
+      expect(protocols, hasLength(1));
+      expect(protocols.single.state, 'pending');
+      expect(protocols.single.sequenceLength, 4);
+      expect(protocols.single.endDate, '2026-01-08');
+    },
+  );
 }
 
 Future<void> _activate(RitmoDatabase database, String date) =>
@@ -220,6 +238,6 @@ Future<void> _answer(RitmoDatabase database, String id) =>
     );
 
 Future<List<ProtocolAlarm>> _protocols(RitmoDatabase database) =>
-    (database.select(database.protocolAlarms)
-          ..orderBy([(row) => OrderingTerm(expression: row.id)]))
-        .get();
+    (database.select(
+      database.protocolAlarms,
+    )..orderBy([(row) => OrderingTerm(expression: row.id)])).get();

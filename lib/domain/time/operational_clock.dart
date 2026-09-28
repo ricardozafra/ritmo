@@ -180,9 +180,8 @@ final class SystemOperationalClock implements OperationalClock {
   }
 
   /// Deslocamento do fuso oficial em um instante absoluto.
-  Duration businessOffsetAt(DateTime instant) => businessLocation
-      .timeZone(instant.toUtc().millisecondsSinceEpoch)
-      .offset;
+  Duration businessOffsetAt(DateTime instant) =>
+      businessLocation.timeZone(instant.toUtc().millisecondsSinceEpoch).offset;
 
   /// Divergência de fuso (RF-05.2).
   ///

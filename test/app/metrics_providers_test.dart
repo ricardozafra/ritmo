@@ -46,10 +46,7 @@ void main() {
       "VALUES ('waiver-1', '2026-01-06', 'morning', 'Consulta')",
     );
 
-    expect(
-      await _readRate(container),
-      Rate(numerator: 2, denominator: 3),
-    );
+    expect(await _readRate(container), Rate(numerator: 2, denominator: 3));
   });
 }
 

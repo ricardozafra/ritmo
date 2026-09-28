@@ -27,10 +27,7 @@ import '../../generators/shared.dart';
 
 enum _ProgressionActionKind { markDone, skip, chooseManual }
 
-typedef _ProgressionAction = ({
-  _ProgressionActionKind kind,
-  int contactIndex,
-});
+typedef _ProgressionAction = ({_ProgressionActionKind kind, int contactIndex});
 
 typedef _ProgressionFixture = ({
   OperationalDate weekStart,
@@ -46,18 +43,12 @@ final Generator<_ProgressionFixture> _anyProgressionFixture = any.simple(
     final actionCount = count + random.nextInt(4);
 
     final actions = List.generate(actionCount, (_) {
-      final kind = _ProgressionActionKind.values[random.nextInt(_ProgressionActionKind.values.length)];
-      return (
-        kind: kind,
-        contactIndex: random.nextInt(count),
-      );
+      final kind = _ProgressionActionKind
+          .values[random.nextInt(_ProgressionActionKind.values.length)];
+      return (kind: kind, contactIndex: random.nextInt(count));
     });
 
-    return (
-      weekStart: weekStart,
-      contactCount: count,
-      actions: actions,
-    );
+    return (weekStart: weekStart, contactCount: count, actions: actions);
   },
   shrink: (fixture) sync* {},
 );
@@ -69,18 +60,25 @@ void main() {
   Glados<_ProgressionFixture>(
     _anyProgressionFixture,
     RitmoGlados.ci(),
-  ).test('Propriedade 39: Progressão semanal sem reinício nem penalidade', (fixture) async {
+  ).test('Propriedade 39: Progressão semanal sem reinício nem penalidade', (
+    fixture,
+  ) async {
     final database = db.RitmoDatabase(NativeDatabase.memory());
     final repository = WeeklyContactSuggestionRepository(database);
     final location = ensureBusinessLocation();
-    final at = tz.TZDateTime.fromMillisecondsSinceEpoch(location, 1767225600000);
+    final at = tz.TZDateTime.fromMillisecondsSinceEpoch(
+      location,
+      1767225600000,
+    );
 
     try {
       final contacts = <Contact>[];
       final initialTouches = <String, OperationalDate?>{};
 
       for (var i = 0; i < fixture.contactCount; i++) {
-        final initialTouch = i % 2 == 0 ? fixture.weekStart.addDays(-20 - i) : null;
+        final initialTouch = i % 2 == 0
+            ? fixture.weekStart.addDays(-20 - i)
+            : null;
         final contact = Contact(
           id: 'contact-$i',
           name: 'Contato $i',
@@ -90,14 +88,16 @@ void main() {
         contacts.add(contact);
         initialTouches[contact.id] = initialTouch;
 
-        await database.into(database.contacts).insert(
-          db.ContactsCompanion.insert(
-            id: contact.id,
-            name: contact.name,
-            createdAt: contact.createdAt.millisecondsSinceEpoch,
-            lastTouchDate: Value(initialTouch?.iso),
-          ),
-        );
+        await database
+            .into(database.contacts)
+            .insert(
+              db.ContactsCompanion.insert(
+                id: contact.id,
+                name: contact.name,
+                createdAt: contact.createdAt.millisecondsSinceEpoch,
+                lastTouchDate: Value(initialTouch?.iso),
+              ),
+            );
       }
 
       final orderedContacts = ordering.weeklyOrder(contacts);
@@ -117,9 +117,9 @@ void main() {
         final action = fixture.actions[step];
 
         // Lê linhas persistidas da semana
-        final rowsBefore = await (database.select(database.weeklyContactSuggestions)
-              ..where((r) => r.weekStart.equals(fixture.weekStart.iso)))
-            .get();
+        final rowsBefore = await (database.select(
+          database.weeklyContactSuggestions,
+        )..where((r) => r.weekStart.equals(fixture.weekStart.iso))).get();
         final pendingRows = rowsBefore.where(
           (r) => r.status == domain.SuggestionStatus.pending.name,
         );
@@ -136,9 +136,9 @@ void main() {
             visitedOrDone.add(pendingId);
 
             // 1. done atualiza last_touch_date do contato tocado para a data operacional vigente
-            final contactRow = await (database.select(database.contacts)
-                  ..where((c) => c.id.equals(pendingId)))
-                .getSingle();
+            final contactRow = await (database.select(
+              database.contacts,
+            )..where((c) => c.id.equals(pendingId))).getSingle();
             expect(contactRow.lastTouchDate, equals(currentToday.iso));
 
             // Garante próximo pending
@@ -163,9 +163,9 @@ void main() {
             visitedOrDone.add(pendingId);
 
             // 2. skipped preserva o last_touch_date anterior
-            final contactRow = await (database.select(database.contacts)
-                  ..where((c) => c.id.equals(pendingId)))
-                .getSingle();
+            final contactRow = await (database.select(
+              database.contacts,
+            )..where((c) => c.id.equals(pendingId))).getSingle();
             expect(contactRow.lastTouchDate, equals(prevTouch?.iso));
           }
         } else if (action.kind == _ProgressionActionKind.chooseManual) {
@@ -179,9 +179,9 @@ void main() {
           visitedOrDone.add(targetContact.id);
 
           // 3. escolha manual marca o contato escolhido com done
-          final contactRow = await (database.select(database.contacts)
-                ..where((c) => c.id.equals(targetContact.id)))
-              .getSingle();
+          final contactRow = await (database.select(
+            database.contacts,
+          )..where((c) => c.id.equals(targetContact.id))).getSingle();
           expect(contactRow.lastTouchDate, equals(currentToday.iso));
 
           // Garante próximo pending se houver
@@ -193,16 +193,19 @@ void main() {
         }
 
         // Verifica estado com a projeção de domínio
-        final domainRows = (await (database.select(database.weeklyContactSuggestions)
-                  ..where((r) => r.weekStart.equals(fixture.weekStart.iso)))
-                .get())
-            .map((r) => domain.WeeklyContactSuggestion(
-                  weekStart: fixture.weekStart,
-                  contactId: r.contactId,
-                  status: domain.SuggestionStatus.values.byName(r.status),
-                  createdAtMillisecondsSinceEpoch: r.createdAt,
-                ))
-            .toList();
+        final domainRows =
+            (await (database.select(database.weeklyContactSuggestions)
+                      ..where((r) => r.weekStart.equals(fixture.weekStart.iso)))
+                    .get())
+                .map(
+                  (r) => domain.WeeklyContactSuggestion(
+                    weekStart: fixture.weekStart,
+                    contactId: r.contactId,
+                    status: domain.SuggestionStatus.values.byName(r.status),
+                    createdAtMillisecondsSinceEpoch: r.createdAt,
+                  ),
+                )
+                .toList();
 
         final view = progression.project(
           weekStart: fixture.weekStart,
@@ -232,44 +235,47 @@ void main() {
   });
 
   group('Propriedade 39: Casos de esgotamento sem reinício', () {
-    test('percorrer todos os contatos com skip esgota a semana sem reiniciar', () {
-      final contacts = [
-        Contact(
-          id: 'c1',
-          name: 'C1',
-          createdAt: tz.TZDateTime.utc(2026, 1, 1),
-        ),
-        Contact(
-          id: 'c2',
-          name: 'C2',
-          createdAt: tz.TZDateTime.utc(2026, 1, 2),
-        ),
-      ];
-      final weekStart = OperationalDate(2026, 3, 9);
-      final rows = [
-        domain.WeeklyContactSuggestion(
-          weekStart: weekStart,
-          contactId: 'c1',
-          status: domain.SuggestionStatus.skipped,
-          createdAtMillisecondsSinceEpoch: 1,
-        ),
-        domain.WeeklyContactSuggestion(
-          weekStart: weekStart,
-          contactId: 'c2',
-          status: domain.SuggestionStatus.skipped,
-          createdAtMillisecondsSinceEpoch: 2,
-        ),
-      ];
+    test(
+      'percorrer todos os contatos com skip esgota a semana sem reiniciar',
+      () {
+        final contacts = [
+          Contact(
+            id: 'c1',
+            name: 'C1',
+            createdAt: tz.TZDateTime.utc(2026, 1, 1),
+          ),
+          Contact(
+            id: 'c2',
+            name: 'C2',
+            createdAt: tz.TZDateTime.utc(2026, 1, 2),
+          ),
+        ];
+        final weekStart = OperationalDate(2026, 3, 9);
+        final rows = [
+          domain.WeeklyContactSuggestion(
+            weekStart: weekStart,
+            contactId: 'c1',
+            status: domain.SuggestionStatus.skipped,
+            createdAtMillisecondsSinceEpoch: 1,
+          ),
+          domain.WeeklyContactSuggestion(
+            weekStart: weekStart,
+            contactId: 'c2',
+            status: domain.SuggestionStatus.skipped,
+            createdAtMillisecondsSinceEpoch: 2,
+          ),
+        ];
 
-      final view = progression.project(
-        weekStart: weekStart,
-        orderedContacts: contacts,
-        weekRows: rows,
-      );
+        final view = progression.project(
+          weekStart: weekStart,
+          orderedContacts: contacts,
+          weekRows: rows,
+        );
 
-      expect(view.exhausted, isTrue);
-      expect(view.suggestedContact, isNull);
-      expect(view.hasContacts, isTrue);
-    });
+        expect(view.exhausted, isTrue);
+        expect(view.suggestedContact, isNull);
+        expect(view.hasContacts, isTrue);
+      },
+    );
   });
 }

@@ -22,27 +22,31 @@ void main() {
   });
 
   test('dia selado encerra a sequência anterior', () {
-    final presentation = deriver.derive(
-      [_day(5), _day(6, sealed: true), _day(7)],
-      activation,
-    );
-
-    expect(presentation?.text, Copy.singleLostDay);
-  });
-
-  test('ignora pré-ativação, mute e dia aberto sem interromper a sequência', () {
-    final input = [
-      _day(4),
+    final presentation = deriver.derive([
       _day(5),
-      _day(6, mute: true, workday: false),
-      _day(7, closed: false),
-    ];
-
-    final presentation = deriver.derive(input.reversed.toList(), activation);
+      _day(6, sealed: true),
+      _day(7),
+    ], activation);
 
     expect(presentation?.text, Copy.singleLostDay);
-    expect(input.map((day) => day.date.day), [4, 5, 6, 7]);
   });
+
+  test(
+    'ignora pré-ativação, mute e dia aberto sem interromper a sequência',
+    () {
+      final input = [
+        _day(4),
+        _day(5),
+        _day(6, mute: true, workday: false),
+        _day(7, closed: false),
+      ];
+
+      final presentation = deriver.derive(input.reversed.toList(), activation);
+
+      expect(presentation?.text, Copy.singleLostDay);
+      expect(input.map((day) => day.date.day), [4, 5, 6, 7]);
+    },
+  );
 }
 
 EligibleDay _day(

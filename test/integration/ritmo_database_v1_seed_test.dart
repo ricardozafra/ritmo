@@ -28,29 +28,32 @@ void main() {
       'até Junho/2027 + consolidação de Business Acumen',
     );
 
-    final checkpoints = await database.customSelect(
-      'SELECT date, competency FROM checkpoints ORDER BY date',
-    ).get();
+    final checkpoints = await database
+        .customSelect('SELECT date, competency FROM checkpoints ORDER BY date')
+        .get();
     expect(
       checkpoints
-          .map((row) => (row.read<String>('date'), row.read<String>('competency')))
+          .map(
+            (row) => (row.read<String>('date'), row.read<String>('competency')),
+          )
           .toList(),
-      [
-        ('2026-12-31', 'IN'),
-        ('2027-02-28', 'ST'),
-        ('2027-06-30', 'CA'),
-      ],
+      [('2026-12-31', 'IN'), ('2027-02-28', 'ST'), ('2027-06-30', 'CA')],
     );
 
-    final mentorships = await database.customSelect(
-      'SELECT competency, mentor_name FROM mentorships ORDER BY competency',
-    ).get();
+    final mentorships = await database
+        .customSelect(
+          'SELECT competency, mentor_name FROM mentorships ORDER BY competency',
+        )
+        .get();
+    expect(mentorships.map((row) => row.read<String>('competency')).toList(), [
+      'CA',
+      'IN',
+      'ST',
+    ]);
     expect(
-      mentorships.map((row) => row.read<String>('competency')).toList(),
-      ['CA', 'IN', 'ST'],
-    );
-    expect(
-      mentorships.every((row) => row.readNullable<String>('mentor_name') == null),
+      mentorships.every(
+        (row) => row.readNullable<String>('mentor_name') == null,
+      ),
       isTrue,
     );
   });

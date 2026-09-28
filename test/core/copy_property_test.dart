@@ -16,7 +16,12 @@ import '../generators/shared.dart';
 
 /// Entrada do catálogo: constante exposta por `Copy` e o texto exatamente como
 /// declarado na especificação, com o requisito que o declara.
-typedef CopyEntry = ({String requirement, String name, String text, String declared});
+typedef CopyEntry = ({
+  String requirement,
+  String name,
+  String text,
+  String declared,
+});
 
 /// Texto declarado literal em `requirements.md`, transcrito caractere a
 /// caractere, independente da implementação sob teste.
@@ -134,12 +139,30 @@ bool _containsEmoji(String text) => text.runes.any(
 );
 
 const Map<String, String> _diacritics = <String, String>{
-  'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a',
-  'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
-  'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
-  'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
-  'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
-  'ç': 'c', 'ñ': 'n',
+  'á': 'a',
+  'à': 'a',
+  'â': 'a',
+  'ã': 'a',
+  'ä': 'a',
+  'é': 'e',
+  'è': 'e',
+  'ê': 'e',
+  'ë': 'e',
+  'í': 'i',
+  'ì': 'i',
+  'î': 'i',
+  'ï': 'i',
+  'ó': 'o',
+  'ò': 'o',
+  'ô': 'o',
+  'õ': 'o',
+  'ö': 'o',
+  'ú': 'u',
+  'ù': 'u',
+  'û': 'u',
+  'ü': 'u',
+  'ç': 'c',
+  'ñ': 'n',
 };
 
 /// Normaliza caixa e acentuação para que a busca não dependa de grafia.
@@ -164,30 +187,32 @@ List<String> _forbiddenTermsIn(String text) {
 }
 
 void main() {
-  Glados(anyCopyEntry, RitmoGlados.ci()).test(
-    'Propriedade 52: copies do catálogo são literais e sóbrias',
-    (CopyEntry entry) {
-      // RNF-03.4: a copy não é parafraseada — é igual ao texto declarado.
-      expect(
-        entry.text,
-        entry.declared,
-        reason:
-            'Copy.${entry.name} deve reproduzir literalmente ${entry.requirement}',
-      );
+  Glados(
+    anyCopyEntry,
+    RitmoGlados.ci(),
+  ).test('Propriedade 52: copies do catálogo são literais e sóbrias', (
+    CopyEntry entry,
+  ) {
+    // RNF-03.4: a copy não é parafraseada — é igual ao texto declarado.
+    expect(
+      entry.text,
+      entry.declared,
+      reason:
+          'Copy.${entry.name} deve reproduzir literalmente ${entry.requirement}',
+    );
 
-      // RNF-03.3: tom sóbrio, sem emoji.
-      expect(
-        _containsEmoji(entry.text),
-        isFalse,
-        reason: 'Copy.${entry.name} contém emoji: "${entry.text}"',
-      );
+    // RNF-03.3: tom sóbrio, sem emoji.
+    expect(
+      _containsEmoji(entry.text),
+      isFalse,
+      reason: 'Copy.${entry.name} contém emoji: "${entry.text}"',
+    );
 
-      // RF-02.19 e RNF-03.3: nenhum termo de gamificação ou punição.
-      expect(
-        _forbiddenTermsIn(entry.text),
-        isEmpty,
-        reason: 'Copy.${entry.name} usa termo proibido: "${entry.text}"',
-      );
-    },
-  );
+    // RF-02.19 e RNF-03.3: nenhum termo de gamificação ou punição.
+    expect(
+      _forbiddenTermsIn(entry.text),
+      isEmpty,
+      reason: 'Copy.${entry.name} usa termo proibido: "${entry.text}"',
+    );
+  });
 }

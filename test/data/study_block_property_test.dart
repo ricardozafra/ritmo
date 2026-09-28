@@ -64,11 +64,10 @@ void main() {
 
       // RD-10: o modelo não tem estado, duração acumulada nem qualquer coluna
       // de reconciliação manual de timer.
-      final columns = (await database
-              .customSelect('PRAGMA table_info(study_blocks)')
-              .get())
-          .map((row) => row.data['name'] as String)
-          .toSet();
+      final columns =
+          (await database.customSelect('PRAGMA table_info(study_blocks)').get())
+              .map((row) => row.data['name'] as String)
+              .toSet();
       expect(columns, {
         'id',
         'operational_date',
@@ -117,11 +116,17 @@ void main() {
         expect(closed, expired.length, reason: context);
         expect(repeated, 0, reason: context);
         for (final row in after) {
-          final wasOpen = before
-              .firstWhere((candidate) => candidate.id == row.id)
-              .endedAt == null;
+          final wasOpen =
+              before
+                  .firstWhere((candidate) => candidate.id == row.id)
+                  .endedAt ==
+              null;
           if (expired.contains(row.id)) {
-            expect(row.endedAt, row.blockDeadline, reason: '$context / ${row.id}');
+            expect(
+              row.endedAt,
+              row.blockDeadline,
+              reason: '$context / ${row.id}',
+            );
           } else if (wasOpen) {
             expect(row.endedAt, isNull, reason: '$context / ${row.id}');
           }
@@ -207,9 +212,9 @@ void main() {
             // O bloco desvinculado é rascunho de cumprimento: é descartado sem
             // tocar em nenhuma outra data (RF-01.24, RF-01.29).
             final id = draftId ?? 'study-${counter - 1}';
-            final removed = await (database.delete(database.studyBlocks)
-                  ..where((row) => row.id.equals(id)))
-                .go();
+            final removed = await (database.delete(
+              database.studyBlocks,
+            )..where((row) => row.id.equals(id))).go();
             expect(removed, 1, reason: '$baseContext / ${action.name}');
             origins.remove(id);
             draftId = null;
@@ -265,7 +270,5 @@ T _success<T, F extends RitmoFailure>(Result<T, F> result) => result.fold(
   ),
 );
 
-String? _failureCode<T>(Result<T, BusinessViolation> result) => result.fold(
-  onSuccess: (_) => null,
-  onFailure: (failure) => failure.code,
-);
+String? _failureCode<T>(Result<T, BusinessViolation> result) =>
+    result.fold(onSuccess: (_) => null, onFailure: (failure) => failure.code);

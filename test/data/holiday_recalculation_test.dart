@@ -47,7 +47,8 @@ void main() {
 
   test('apply atomically audits, reclassifies, reconciles and emits', () async {
     await ProtocolReconciler(database).reconcileProtocols();
-    final original = (await database.select(database.protocolAlarms).get()).single;
+    final original =
+        (await database.select(database.protocolAlarms).get()).single;
     await database.customStatement(
       "UPDATE protocol_alarms SET state = 'answered', previous_state = NULL, "
       "triggered_at = 10, cause = 'Causa', plan_or_execution = 'plan', "
@@ -68,7 +69,8 @@ void main() {
     final event = await eventFuture;
     final holiday = await database.select(database.holidays).getSingle();
     final day = await _day(database, affected.iso);
-    final protocol = (await database.select(database.protocolAlarms).get()).single;
+    final protocol =
+        (await database.select(database.protocolAlarms).get()).single;
 
     expect(report.holidayChanged, isTrue);
     expect(report.protocols.invalidated, ['seq:2026-01-05']);
@@ -86,53 +88,63 @@ void main() {
     expect(event.operation, HolidayOperation.apply);
   });
 
-  test('remove restores the result, keeps audit and creates a new protocol', () async {
-    await ProtocolReconciler(database).reconcileProtocols();
-    final originalId = (await database.select(database.protocolAlarms).get()).single.id;
-    _value(await recalculation.apply(affected, reasonText: 'Aplicação'));
+  test(
+    'remove restores the result, keeps audit and creates a new protocol',
+    () async {
+      await ProtocolReconciler(database).reconcileProtocols();
+      final originalId =
+          (await database.select(database.protocolAlarms).get()).single.id;
+      _value(await recalculation.apply(affected, reasonText: 'Aplicação'));
 
-    final eventFuture = recalculation.changes.first;
-    final report = _value(
-      await recalculation.remove(affected, reasonText: '  Correção  '),
-    );
-    final event = await eventFuture;
-    final holiday = await database.select(database.holidays).getSingle();
-    final day = await _day(database, affected.iso);
-    final protocols = await (database.select(database.protocolAlarms)
-          ..orderBy([(row) => OrderingTerm(expression: row.id)]))
-        .get();
+      final eventFuture = recalculation.changes.first;
+      final report = _value(
+        await recalculation.remove(affected, reasonText: '  Correção  '),
+      );
+      final event = await eventFuture;
+      final holiday = await database.select(database.holidays).getSingle();
+      final day = await _day(database, affected.iso);
+      final protocols = await (database.select(
+        database.protocolAlarms,
+      )..orderBy([(row) => OrderingTerm(expression: row.id)])).get();
 
-    expect(report.holidayChanged, isTrue);
-    expect(report.protocols.created, ['seq:2026-01-05']);
-    expect(holiday.active, isFalse);
-    expect(holiday.applyReasonText, 'Aplicação');
-    expect(holiday.removeReasonText, 'Correção');
-    expect(holiday.removedAt, instant.millisecondsSinceEpoch);
-    expect(day.effectiveResult, 'unsealed');
-    expect(day.muteCause, isNull);
-    expect(day.previousResult, 'unsealed');
-    expect(protocols, hasLength(2));
-    expect(protocols.firstWhere((row) => row.id == originalId).state, 'invalidated');
-    expect(
-      protocols.firstWhere((row) => row.id != originalId).state,
-      'pending',
-    );
-    expect(event.operation, HolidayOperation.remove);
-  });
+      expect(report.holidayChanged, isTrue);
+      expect(report.protocols.created, ['seq:2026-01-05']);
+      expect(holiday.active, isFalse);
+      expect(holiday.applyReasonText, 'Aplicação');
+      expect(holiday.removeReasonText, 'Correção');
+      expect(holiday.removedAt, instant.millisecondsSinceEpoch);
+      expect(day.effectiveResult, 'unsealed');
+      expect(day.muteCause, isNull);
+      expect(day.previousResult, 'unsealed');
+      expect(protocols, hasLength(2));
+      expect(
+        protocols.firstWhere((row) => row.id == originalId).state,
+        'invalidated',
+      );
+      expect(
+        protocols.firstWhere((row) => row.id != originalId).state,
+        'pending',
+      );
+      expect(event.operation, HolidayOperation.remove);
+    },
+  );
 
-  test('repeating the same operation is idempotent and emits no new event', () async {
-    _value(await recalculation.apply(affected));
-    var events = 0;
-    final subscription = recalculation.changes.listen((_) => events++);
+  test(
+    'repeating the same operation is idempotent and emits no new event',
+    () async {
+      _value(await recalculation.apply(affected));
+      var events = 0;
+      final subscription = recalculation.changes.listen((_) => events++);
 
-    final report = _value(await recalculation.apply(affected));
-    await Future<void>.delayed(Duration.zero);
+      final report = _value(await recalculation.apply(affected));
+      await Future<void>.delayed(Duration.zero);
 
-    expect(report.holidayChanged, isFalse);
-    expect(report.protocols.changedNothing, isTrue);
-    expect(events, 0);
-    await subscription.cancel();
-  });
+      expect(report.holidayChanged, isFalse);
+      expect(report.protocols.changedNothing, isTrue);
+      expect(events, 0);
+      await subscription.cancel();
+    },
+  );
 
   test('an over-limit optional reason changes no persisted state', () async {
     final result = await recalculation.apply(
@@ -186,7 +198,6 @@ Future<void> _insertDay(RitmoDatabase database, String date) =>
       [date],
     );
 
-Future<Day> _day(RitmoDatabase database, String date) =>
-    (database.select(database.days)
-          ..where((row) => row.operationalDate.equals(date)))
-        .getSingle();
+Future<Day> _day(RitmoDatabase database, String date) => (database.select(
+  database.days,
+)..where((row) => row.operationalDate.equals(date))).getSingle();

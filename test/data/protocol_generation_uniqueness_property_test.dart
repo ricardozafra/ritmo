@@ -21,13 +21,7 @@ import 'package:ritmo/domain/time/operational_calendar.dart';
 import '../generators/shared.dart';
 
 /// Estados persistíveis de uma data operacional relevantes para a sequência.
-enum _SlotKind {
-  muteWeekend,
-  muteHoliday,
-  failure,
-  sealedWorkday,
-  openWorkday,
-}
+enum _SlotKind { muteWeekend, muteHoliday, failure, sealedWorkday, openWorkday }
 
 /// Formas de acionar o reconciliador, incluindo repetição e execução
 /// intercalada com duas instâncias distintas sobre o mesmo banco.
@@ -345,7 +339,8 @@ void main() {
           expect(
             livePerGeneration.values.every((count) => count == 1),
             isTrue,
-            reason: 'protocolos vivos duplicados: $livePerGeneration ($context)',
+            reason:
+                'protocolos vivos duplicados: $livePerGeneration ($context)',
           );
 
           // RF-03.22: quatro dias úteis não selados reconciliados
@@ -395,11 +390,7 @@ void main() {
             final protocol = live[index];
             expect(protocol.startDate, sequence.startDate.iso, reason: context);
             expect(protocol.endDate, sequence.endDate.iso, reason: context);
-            expect(
-              protocol.sequenceLength,
-              sequence.length,
-              reason: context,
-            );
+            expect(protocol.sequenceLength, sequence.length, reason: context);
             expect(protocol.state, 'pending', reason: context);
             expect(protocol.previousState, isNull, reason: context);
           }

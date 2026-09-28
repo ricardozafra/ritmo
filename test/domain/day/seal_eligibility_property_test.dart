@@ -70,8 +70,7 @@ void main() {
       final PillarWaiver? activeWaiver = waiverPillar == null
           ? null
           : PillarWaiver(pillar: waiverPillar);
-      final context =
-          'incompletos $missing, dispensa ${fixture.waiver.name}';
+      final context = 'incompletos $missing, dispensa ${fixture.waiver.name}';
 
       // Bicondicional da elegibilidade (RF-02.2, RF-02.3, RF-02.7).
       expect(
@@ -87,11 +86,7 @@ void main() {
         expectedUncovered,
         reason: context,
       );
-      expect(
-        expectedUncovered.isEmpty,
-        expectedEligible,
-        reason: context,
-      );
+      expect(expectedUncovered.isEmpty, expectedEligible, reason: context);
 
       // O comando de selo em dia útil aberto respeita a elegibilidade e
       // registra `seal_timestamp` mantendo o dia aberto (RF-02.1, RF-02.2).

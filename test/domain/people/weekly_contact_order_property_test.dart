@@ -55,62 +55,62 @@ final Generator<List<Contact>> _anyContactList = any.simple(
 void main() {
   const ordering = ContactOrdering();
 
-  Glados<List<Contact>>(
-    _anyContactList,
-    RitmoGlados.ci(),
-  ).test('Propriedade 37: Ordem semanal é uma ordem total determinística', (contacts) {
-    final ordered = ordering.weeklyOrder(contacts);
+  Glados<List<Contact>>(_anyContactList, RitmoGlados.ci()).test(
+    'Propriedade 37: Ordem semanal é uma ordem total determinística',
+    (contacts) {
+      final ordered = ordering.weeklyOrder(contacts);
 
-    // Mesma quantidade de elementos
-    expect(ordered.length, equals(contacts.length));
+      // Mesma quantidade de elementos
+      expect(ordered.length, equals(contacts.length));
 
-    // Determinismo: rodando de novo dá exatamente a mesma lista
-    final secondRun = ordering.weeklyOrder(contacts);
-    expect(
-      ordered.map((c) => c.id).toList(),
-      equals(secondRun.map((c) => c.id).toList()),
-    );
-
-    // Verificação par a par da ordem total determinística
-    for (var i = 0; i < ordered.length - 1; i++) {
-      final a = ordered[i];
-      final b = ordered[i + 1];
-
-      // 1. Nulos primeiro
-      if (a.lastTouchDate == null && b.lastTouchDate != null) {
-        continue;
-      }
-      if (a.lastTouchDate != null && b.lastTouchDate == null) {
-        fail('Contato com data não pode preceder contato com data nula');
-      }
-
-      // Se ambos tiverem datas:
-      if (a.lastTouchDate != null && b.lastTouchDate != null) {
-        final dateCmp = a.lastTouchDate!.compareTo(b.lastTouchDate!);
-        if (dateCmp < 0) continue;
-        if (dateCmp > 0) {
-          fail('Data de toque de A deve ser <= data de toque de B');
-        }
-      }
-
-      // Empate na data de toque: desempate por created_at
-      final createdCmp = a.createdAt.millisecondsSinceEpoch.compareTo(
-        b.createdAt.millisecondsSinceEpoch,
-      );
-      if (createdCmp < 0) continue;
-      if (createdCmp > 0) {
-        fail('created_at de A deve ser <= created_at de B em empate de data');
-      }
-
-      // Empate em created_at: desempate por id
-      final idCmp = a.id.compareTo(b.id);
+      // Determinismo: rodando de novo dá exatamente a mesma lista
+      final secondRun = ordering.weeklyOrder(contacts);
       expect(
-        idCmp <= 0,
-        isTrue,
-        reason: 'id de A deve ser <= id de B em empate de data e created_at',
+        ordered.map((c) => c.id).toList(),
+        equals(secondRun.map((c) => c.id).toList()),
       );
-    }
-  });
+
+      // Verificação par a par da ordem total determinística
+      for (var i = 0; i < ordered.length - 1; i++) {
+        final a = ordered[i];
+        final b = ordered[i + 1];
+
+        // 1. Nulos primeiro
+        if (a.lastTouchDate == null && b.lastTouchDate != null) {
+          continue;
+        }
+        if (a.lastTouchDate != null && b.lastTouchDate == null) {
+          fail('Contato com data não pode preceder contato com data nula');
+        }
+
+        // Se ambos tiverem datas:
+        if (a.lastTouchDate != null && b.lastTouchDate != null) {
+          final dateCmp = a.lastTouchDate!.compareTo(b.lastTouchDate!);
+          if (dateCmp < 0) continue;
+          if (dateCmp > 0) {
+            fail('Data de toque de A deve ser <= data de toque de B');
+          }
+        }
+
+        // Empate na data de toque: desempate por created_at
+        final createdCmp = a.createdAt.millisecondsSinceEpoch.compareTo(
+          b.createdAt.millisecondsSinceEpoch,
+        );
+        if (createdCmp < 0) continue;
+        if (createdCmp > 0) {
+          fail('created_at de A deve ser <= created_at de B em empate de data');
+        }
+
+        // Empate em created_at: desempate por id
+        final idCmp = a.id.compareTo(b.id);
+        expect(
+          idCmp <= 0,
+          isTrue,
+          reason: 'id de A deve ser <= id de B em empate de data e created_at',
+        );
+      }
+    },
+  );
 
   group('Propriedade 37: Casos específicos e corner cases', () {
     final location = ensureBusinessLocation();

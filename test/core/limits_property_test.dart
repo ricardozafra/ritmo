@@ -35,7 +35,8 @@ const List<LimitedField> _fields = <LimitedField>[
   ),
   (
     requirement: 'RD-29',
-    name: 'nota curta, nota de Recuperação, motivo de dispensa, contexto de contato',
+    name:
+        'nota curta, nota de Recuperação, motivo de dispensa, contexto de contato',
     declaredMaxRunes: 500,
     maxRunes: Limits.shortTextMaxRunes,
   ),

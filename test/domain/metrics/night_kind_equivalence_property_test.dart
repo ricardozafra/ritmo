@@ -32,8 +32,7 @@ final Generator<_NightTimelineFixture> _anyNightTimeline = any.simple(
     // Dias abertos, mute e pré-ativação não satisfazem RF-04.3/RF-04.5 porque
     // não participam da taxa, ainda que um fixture bruto carregue isSealed.
     if (!days.any(
-      (day) =>
-          _isMetricEligible(day, generated.activationDate) && day.isSealed,
+      (day) => _isMetricEligible(day, generated.activationDate) && day.isSealed,
     )) {
       final index = days.indexWhere(
         (day) => _isMetricEligible(day, generated.activationDate),
@@ -93,51 +92,46 @@ final Generator<_NightTimelineFixture> _anyNightTimeline = any.simple(
 void main() {
   const calculator = MetricsCalculator();
 
-  Glados<_NightTimelineFixture>(
-    _anyNightTimeline,
-    RitmoGlados.ci(),
-  ).test('Propriedade 14: Estudo e Recuperação são equivalentes na métrica', (
-    fixture,
-  ) {
-    final before = _project(fixture.timeline.days, fixture.nightKinds);
-    final afterKinds = <NightKind?>[
-      for (var index = 0; index < fixture.nightKinds.length; index++)
-        fixture.swappedIndexes.contains(index)
-            ? _opposite(fixture.nightKinds[index]!)
-            : fixture.nightKinds[index],
-    ];
-    final after = _project(fixture.timeline.days, afterKinds);
+  Glados<_NightTimelineFixture>(_anyNightTimeline, RitmoGlados.ci()).test(
+    'Propriedade 14: Estudo e Recuperação são equivalentes na métrica',
+    (fixture) {
+      final before = _project(fixture.timeline.days, fixture.nightKinds);
+      final afterKinds = <NightKind?>[
+        for (var index = 0; index < fixture.nightKinds.length; index++)
+          fixture.swappedIndexes.contains(index)
+              ? _opposite(fixture.nightKinds[index]!)
+              : fixture.nightKinds[index],
+      ];
+      final after = _project(fixture.timeline.days, afterKinds);
 
-    final beforeRate = calculator.rate(
-      before,
-      fixture.timeline.activationDate,
-    );
-    final afterRate = calculator.rate(after, fixture.timeline.activationDate);
-
-    expect(afterRate.numerator, beforeRate.numerator);
-    expect(afterRate.denominator, beforeRate.denominator);
-
-    for (final index in fixture.swappedIndexes) {
-      expect(afterKinds[index], isNot(fixture.nightKinds[index]));
-      final day = after[index];
-      expect(
-        calculator.rate([day], day.date),
-        Rate(numerator: 1, denominator: 1),
-        reason: 'Dia selado ${day.date} deve valer uma unidade com '
-            '${afterKinds[index]}.',
+      final beforeRate = calculator.rate(
+        before,
+        fixture.timeline.activationDate,
       );
-    }
-  });
+      final afterRate = calculator.rate(after, fixture.timeline.activationDate);
+
+      expect(afterRate.numerator, beforeRate.numerator);
+      expect(afterRate.denominator, beforeRate.denominator);
+
+      for (final index in fixture.swappedIndexes) {
+        expect(afterKinds[index], isNot(fixture.nightKinds[index]));
+        final day = after[index];
+        expect(
+          calculator.rate([day], day.date),
+          Rate(numerator: 1, denominator: 1),
+          reason:
+              'Dia selado ${day.date} deve valer uma unidade com '
+              '${afterKinds[index]}.',
+        );
+      }
+    },
+  );
 }
 
 bool _isMetricEligible(
   TimelineDayFixture day,
   OperationalDate activationDate,
-) =>
-    day.date >= activationDate &&
-    day.isWorkday &&
-    day.isClosed &&
-    !day.isMute;
+) => day.date >= activationDate && day.isWorkday && day.isClosed && !day.isMute;
 
 List<EligibleDay> _project(
   List<TimelineDayFixture> days,

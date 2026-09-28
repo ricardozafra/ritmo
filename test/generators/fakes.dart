@@ -91,9 +91,7 @@ final class InMemoryDatabase {
 
   /// Executa [body] em uma transação: confirma no retorno normal e desfaz por
   /// completo quando [body] lança, sem escrita parcial (RNF-05.8).
-  Future<T> transaction<T>(
-    Future<T> Function(QueryExecutor tx) body,
-  ) async {
+  Future<T> transaction<T>(Future<T> Function(QueryExecutor tx) body) async {
     final tx = executor.beginTransaction();
     await tx.ensureOpen(_user);
     try {

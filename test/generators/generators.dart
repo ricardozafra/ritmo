@@ -73,9 +73,9 @@ const List<int> _dayCloseBoundaryMinutes = <int>[
 final Generator<BoundaryCandidate> anyBoundaryCandidate = any.simple(
   generate: (random, size) {
     final closeMinutes = random.nextBool()
-        ? _dayCloseBoundaryMinutes[
-            random.nextInt(_dayCloseBoundaryMinutes.length)
-          ]
+        ? _dayCloseBoundaryMinutes[random.nextInt(
+            _dayCloseBoundaryMinutes.length,
+          )]
         : random.nextInt(_minutesPerDay);
     final nightMinutes = random.nextBool()
         ? <int>[
@@ -147,7 +147,8 @@ final Generator<InstantFixture> anyInstant = any.simple(
   generate: (random, size) {
     final date = anyOperationalDate(random, size).value;
     final calendar = anySettings(random, size).value;
-    final edge = TemporalEdge.values[random.nextInt(TemporalEdge.values.length)];
+    final edge =
+        TemporalEdge.values[random.nextInt(TemporalEdge.values.length)];
     return (
       date: date,
       civilInstant: civilInstantAt(date, calendar, edge),
@@ -186,9 +187,7 @@ DateTime civilInstantAt(
     ),
     TemporalEdge.atDayClose => close,
     TemporalEdge.afterDayClose => close.add(const Duration(milliseconds: 1)),
-    TemporalEdge.atNightEnd => calendar
-        .blockDeadline(date)
-        .toCivilDateTime(),
+    TemporalEdge.atNightEnd => calendar.blockDeadline(date).toCivilDateTime(),
     TemporalEdge.civilMidnight => DateTime.utc(next.year, next.month, next.day),
   };
 }
@@ -214,20 +213,18 @@ final Generator<DayStateFixture> anyDayState = any.choose([
 DateTime _closeOf(OperationalDate date) =>
     canonicalCalendar.operationalClose(date).toCivilDateTime();
 
-DayStateFixture _openOrClosed(
-  FixtureDayResult result, {
-  bool closed = false,
-}) => (
-  date: _workday,
-  baseResult: result,
-  effectiveResult: result,
-  closedAt: closed ? _closeOf(_workday) : null,
-  sealTimestamp: result == FixtureDayResult.sealed
-      ? DateTime.utc(2026, 1, 5, 23)
-      : null,
-  muteCause: null,
-  previousResult: null,
-);
+DayStateFixture _openOrClosed(FixtureDayResult result, {bool closed = false}) =>
+    (
+      date: _workday,
+      baseResult: result,
+      effectiveResult: result,
+      closedAt: closed ? _closeOf(_workday) : null,
+      sealTimestamp: result == FixtureDayResult.sealed
+          ? DateTime.utc(2026, 1, 5, 23)
+          : null,
+      muteCause: null,
+      previousResult: null,
+    );
 
 DayStateFixture _weekend({required bool closed}) => (
   date: _weekendDay,

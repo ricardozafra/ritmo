@@ -33,10 +33,7 @@ void main() {
 
       expect(first.name, kBusinessTimeZone);
       expect(second, same(first));
-      expect(
-        SystemOperationalClock().businessLocation.name,
-        kBusinessTimeZone,
-      );
+      expect(SystemOperationalClock().businessLocation.name, kBusinessTimeZone);
     });
 
     test('converte o instante do aparelho para o fuso oficial', () {
@@ -114,10 +111,7 @@ void main() {
       expect(deadline.day, 10);
       expect(deadline.hour, 1);
       expect(deadline.minute, 30);
-      expect(
-        deadline.isBefore(configured.operationalClose(friday)),
-        isTrue,
-      );
+      expect(deadline.isBefore(configured.operationalClose(friday)), isTrue);
     });
 
     test('no seed o deadline coincide com o fechamento', () {

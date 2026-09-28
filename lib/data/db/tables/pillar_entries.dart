@@ -7,20 +7,16 @@ import 'study_blocks.dart';
 
 /// Registro de exatamente um dos três pilares em uma data operacional.
 class PillarEntries extends Table {
-  TextColumn get operationalDate =>
-      text().references(Days, #operationalDate)();
+  TextColumn get operationalDate => text().references(Days, #operationalDate)();
   TextColumn get pillar => text()();
 
-  BoolColumn get workoutDone =>
-      boolean().withDefault(const Constant(false))();
-  BoolColumn get briefingDone =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get workoutDone => boolean().withDefault(const Constant(false))();
+  BoolColumn get briefingDone => boolean().withDefault(const Constant(false))();
   TextColumn get briefingMode => text().nullable()();
   IntColumn get workoutAt => integer().nullable()();
   IntColumn get briefingAt => integer().nullable()();
 
-  BoolColumn get toggleOn =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get toggleOn => boolean().withDefault(const Constant(false))();
   TextColumn get changeInitiativeId =>
       text().nullable().references(ChangeInitiatives, #id)();
   TextColumn get noteText => text().nullable()();

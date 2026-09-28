@@ -13,8 +13,7 @@ class Settings extends Table {
   IntColumn get reviewTimeMin => integer().withDefault(const Constant(1260))();
   BoolColumn get sundayNotificationEnabled =>
       boolean().withDefault(const Constant(false))();
-  BoolColumn get syncEnabled =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get syncEnabled => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

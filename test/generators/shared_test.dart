@@ -181,77 +181,84 @@ void main() {
       expect(database.schemaVersion, 1);
     });
 
-    test('InMemoryDatabase persiste schema, CHECK e chave estrangeira', () async {
-      final database = await InMemoryDatabase.open();
-      addTearDown(database.close);
+    test(
+      'InMemoryDatabase persiste schema, CHECK e chave estrangeira',
+      () async {
+        final database = await InMemoryDatabase.open();
+        addTearDown(database.close);
 
-      await database.execute(
-        'CREATE TABLE days (operational_date TEXT NOT NULL PRIMARY KEY);',
-      );
-      await database.execute(
-        'CREATE TABLE study_blocks ('
-        'id TEXT NOT NULL PRIMARY KEY, '
-        'operational_date TEXT NOT NULL REFERENCES days(operational_date), '
-        'duration_minutes INTEGER NOT NULL CHECK (duration_minutes >= 0));',
-      );
-      await database.insert('INSERT INTO days VALUES (?);', const ['2026-01-05']);
-      await database.insert('INSERT INTO study_blocks VALUES (?, ?, ?);', const [
-        'block-1',
-        '2026-01-05',
-        45,
-      ]);
-
-      final rows = await database.select(
-        'SELECT duration_minutes FROM study_blocks WHERE id = ?;',
-        const ['block-1'],
-      );
-      expect(rows.single['duration_minutes'], 45);
-
-      // CHECK rejeita duração negativa.
-      await expectLater(
-        database.insert('INSERT INTO study_blocks VALUES (?, ?, ?);', const [
-          'block-2',
+        await database.execute(
+          'CREATE TABLE days (operational_date TEXT NOT NULL PRIMARY KEY);',
+        );
+        await database.execute(
+          'CREATE TABLE study_blocks ('
+          'id TEXT NOT NULL PRIMARY KEY, '
+          'operational_date TEXT NOT NULL REFERENCES days(operational_date), '
+          'duration_minutes INTEGER NOT NULL CHECK (duration_minutes >= 0));',
+        );
+        await database.insert('INSERT INTO days VALUES (?);', const [
           '2026-01-05',
-          -1,
-        ]),
-        throwsA(anything),
-      );
+        ]);
+        await database.insert(
+          'INSERT INTO study_blocks VALUES (?, ?, ?);',
+          const ['block-1', '2026-01-05', 45],
+        );
 
-      // PRAGMA foreign_keys ativo: data operacional inexistente é rejeitada.
-      await expectLater(
-        database.insert('INSERT INTO study_blocks VALUES (?, ?, ?);', const [
-          'block-3',
-          '2026-01-06',
-          10,
-        ]),
-        throwsA(anything),
-      );
-    });
+        final rows = await database.select(
+          'SELECT duration_minutes FROM study_blocks WHERE id = ?;',
+          const ['block-1'],
+        );
+        expect(rows.single['duration_minutes'], 45);
 
-    test('InMemoryDatabase desfaz a transação inteira em caso de falha', () async {
-      final database = await InMemoryDatabase.open();
-      addTearDown(database.close);
+        // CHECK rejeita duração negativa.
+        await expectLater(
+          database.insert('INSERT INTO study_blocks VALUES (?, ?, ?);', const [
+            'block-2',
+            '2026-01-05',
+            -1,
+          ]),
+          throwsA(anything),
+        );
 
-      await database.execute('CREATE TABLE notes (id TEXT NOT NULL);');
+        // PRAGMA foreign_keys ativo: data operacional inexistente é rejeitada.
+        await expectLater(
+          database.insert('INSERT INTO study_blocks VALUES (?, ?, ?);', const [
+            'block-3',
+            '2026-01-06',
+            10,
+          ]),
+          throwsA(anything),
+        );
+      },
+    );
 
-      await expectLater(
-        database.transaction((tx) async {
-          await tx.runInsert('INSERT INTO notes VALUES (?);', const ['a']);
-          throw StateError('falha simulada antes do commit');
-        }),
-        throwsStateError,
-      );
+    test(
+      'InMemoryDatabase desfaz a transação inteira em caso de falha',
+      () async {
+        final database = await InMemoryDatabase.open();
+        addTearDown(database.close);
 
-      expect(await database.select('SELECT id FROM notes;'), isEmpty);
+        await database.execute('CREATE TABLE notes (id TEXT NOT NULL);');
 
-      await database.transaction(
-        (tx) => tx.runInsert('INSERT INTO notes VALUES (?);', const ['b']),
-      );
-      expect(
-        (await database.select('SELECT id FROM notes;')).single['id'],
-        'b',
-      );
-    });
+        await expectLater(
+          database.transaction((tx) async {
+            await tx.runInsert('INSERT INTO notes VALUES (?);', const ['a']);
+            throw StateError('falha simulada antes do commit');
+          }),
+          throwsStateError,
+        );
+
+        expect(await database.select('SELECT id FROM notes;'), isEmpty);
+
+        await database.transaction(
+          (tx) => tx.runInsert('INSERT INTO notes VALUES (?);', const ['b']),
+        );
+        expect(
+          (await database.select('SELECT id FROM notes;')).single['id'],
+          'b',
+        );
+      },
+    );
 
     test('RecordingNotificationGateway registra e cancela por chave', () async {
       final gateway = RecordingNotificationGateway();

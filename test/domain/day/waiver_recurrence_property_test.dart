@@ -114,7 +114,8 @@ final Generator<_RecurrenceInput> _anyRecurrenceInput = any.simple(
       start: start,
       span: span,
       pillar: pillar,
-      freeKind: (_) => _freeWeekdayPool[random.nextInt(_freeWeekdayPool.length)],
+      freeKind: (_) =>
+          _freeWeekdayPool[random.nextInt(_freeWeekdayPool.length)],
     );
   },
   shrink: (input) sync* {
@@ -429,7 +430,8 @@ void main() {
       expect(
         bridge.verdict,
         RecurrenceVerdict.requiresReturnRuleDialog,
-        reason: 'ponte ${input.bridgeFriday.iso} -> '
+        reason:
+            'ponte ${input.bridgeFriday.iso} -> '
             '${input.bridgeMonday.iso} ($context)',
       );
       expect(bridge.chainStartDate, input.bridgeFriday, reason: context);
@@ -453,7 +455,9 @@ void main() {
         dayContext,
       );
       expect(
-        (bridgeCreate as Failure<PillarWaiver, WaiverViolation>).failure.message,
+        (bridgeCreate as Failure<PillarWaiver, WaiverViolation>)
+            .failure
+            .message,
         contains('Regra do Retorno'),
         reason: context,
       );

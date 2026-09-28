@@ -10,7 +10,5 @@ class ChangeInitiatives extends Table {
   Set<Column<Object>> get primaryKey => {id};
 
   @override
-  List<String> get customConstraints => const [
-    'CHECK (length(name) <= 120)',
-  ];
+  List<String> get customConstraints => const ['CHECK (length(name) <= 120)'];
 }

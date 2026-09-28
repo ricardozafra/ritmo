@@ -124,7 +124,8 @@ _ReferenceRate _referenceRate(_RateInput input) {
   var numerator = 0;
   var denominator = 0;
   for (final day in input.days) {
-    final counts = day.date >= input.activationDate &&
+    final counts =
+        day.date >= input.activationDate &&
         day.isWorkday &&
         day.isClosed &&
         !day.isMute;

@@ -29,20 +29,17 @@ void main() {
         operationalDate: date,
       );
 
-      expect(
-        state.actions,
-        const <NightAction>{NightAction.study, NightAction.recovery},
-      );
+      expect(state.actions, const <NightAction>{
+        NightAction.study,
+        NightAction.recovery,
+      });
       expect(state.allowsStudy, isTrue);
       expect(state.allowsRecovery, isTrue);
       expect(state.copy, isNull);
     });
 
     test('no deadline oferece somente recuperação e a copy literal', () {
-      final state = window.evaluate(
-        now: deadline,
-        operationalDate: date,
-      );
+      final state = window.evaluate(now: deadline, operationalDate: date);
 
       expect(state.actions, const <NightAction>{NightAction.recovery});
       expect(state.allowsStudy, isFalse);
@@ -89,10 +86,10 @@ void main() {
         operationalDate: date,
       );
 
-      expect(
-        state.actions,
-        const <NightAction>{NightAction.study, NightAction.recovery},
-      );
+      expect(state.actions, const <NightAction>{
+        NightAction.study,
+        NightAction.recovery,
+      });
       expect(state.copy, isNull);
     });
 

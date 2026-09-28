@@ -21,26 +21,30 @@ typedef _MentorshipBadgeFixture = ({
   String? mentorName,
 });
 
-final Generator<_MentorshipBadgeFixture> _anyMentorshipBadgeFixture = any.simple(
-  generate: (random, size) {
-    final today = anyOperationalDate(random, size).value;
-    final hasDate = random.nextBool();
-    OperationalDate? lastMeetingDate;
-    if (hasDate) {
-      final offsetDays = random.nextInt(100) - random.nextInt(100);
-      lastMeetingDate = today.addDays(offsetDays);
-    }
-    final comp = Competency.values[random.nextInt(Competency.values.length)];
-    final mentorName = random.nextBool() ? 'Mentor ${random.nextInt(1000)}' : null;
-    return (
-      today: today,
-      lastMeetingDate: lastMeetingDate,
-      competency: comp,
-      mentorName: mentorName,
+final Generator<_MentorshipBadgeFixture> _anyMentorshipBadgeFixture = any
+    .simple(
+      generate: (random, size) {
+        final today = anyOperationalDate(random, size).value;
+        final hasDate = random.nextBool();
+        OperationalDate? lastMeetingDate;
+        if (hasDate) {
+          final offsetDays = random.nextInt(100) - random.nextInt(100);
+          lastMeetingDate = today.addDays(offsetDays);
+        }
+        final comp =
+            Competency.values[random.nextInt(Competency.values.length)];
+        final mentorName = random.nextBool()
+            ? 'Mentor ${random.nextInt(1000)}'
+            : null;
+        return (
+          today: today,
+          lastMeetingDate: lastMeetingDate,
+          competency: comp,
+          mentorName: mentorName,
+        );
+      },
+      shrink: (fixture) sync* {},
     );
-  },
-  shrink: (fixture) sync* {},
-);
 
 void main() {
   Glados<_MentorshipBadgeFixture>(
