@@ -10,6 +10,9 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // Exigido por flutter_local_notifications 10+ para agendamento com
+        // compatibilidade em versões antigas do Android.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -42,4 +45,10 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Suporte a APIs Java 8+ em versões antigas do Android, exigido por
+    // flutter_local_notifications (agendamento de notificações).
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
