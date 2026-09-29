@@ -68,16 +68,15 @@ Validação padrão a cada mudança de código Dart/config: `flutter analyze --n
 
 ## 3. minSdk/targetSdk e revisão de versão  [MÉDIO RISCO]
 
-- [ ] 3.1 Confirmar `minSdk` compatível
-  - Hoje usa `flutter.minSdkVersion`. O desugaring e o plugin funcionam a partir de API 21,
-    mas o comportamento de notificações agendadas é melhor em API 23+.
-  - Decidir explicitamente o `minSdk` (ex.: 23) em vez de herdar o default do Flutter, se
-    houver requisito de compatibilidade. Documentar a escolha.
-  - _Validação:_ build de debug + fumaça em emulador do `minSdk` escolhido.
+- [x] 3.1 Confirmar `minSdk` compatível  [FEITO: minSdk = 23]
+  - Fixado `minSdk = 23` (Android 6) no `build.gradle.kts`; `targetSdk` mantido em
+    `flutter.targetSdkVersion` (herdado do Flutter, não fixo — decisão do usuário).
+  - _Validação:_ **PENDENTE** — build de debug + fumaça em emulador exigem Android SDK
+    (ausente nesta máquina).
 
-- [ ] 3.2 Definir `versionCode`/`versionName` de release
-  - Hoje herdados de `flutter.versionCode/versionName` (derivados de `pubspec.yaml`
-    `version: 1.0.0+1`). Confirmar a política de versionamento para o primeiro release.
+- [x] 3.2 Definir `versionCode`/`versionName` de release  [FEITO: mantido 1.0.0+1]
+  - Mantidos herdados de `flutter.versionCode/versionName` (de `pubspec.yaml` `1.0.0+1`)
+    para o primeiro release.
 
 ---
 
@@ -91,7 +90,11 @@ Validação padrão a cada mudança de código Dart/config: `flutter analyze --n
     `keytool -genkey -v -keystore ritmo-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias ritmo`
   - Guardar `ritmo-upload.jks` FORA do repositório (ou em caminho ignorado).
 
-- [ ] 4.2 Criar `android/key.properties` (não versionado)
+- [x] (parcial) `.gitignore` protege segredos  [FEITO]
+  - Adicionadas regras `android/key.properties`, `**/*.jks`, `**/*.keystore` — verificadas
+    com `git check-ignore`.
+
+- [ ] 4.2 Criar `android/key.properties` (não versionado)  [AÇÃO DO USUÁRIO]
   - Conteúdo:
     ```
     storePassword=<senha>
@@ -99,13 +102,14 @@ Validação padrão a cada mudança de código Dart/config: `flutter analyze --n
     keyAlias=ritmo
     storeFile=<caminho absoluto p/ ritmo-upload.jks>
     ```
-  - Adicionar ao `.gitignore` (raiz ou `android/`): `key.properties` e `*.jks`/`*.keystore`.
+  - O `.gitignore` já cobre este arquivo (não será versionado).
 
-- [ ] 4.3 Ligar o signingConfig de release no `android/app/build.gradle.kts`
-  - Carregar `key.properties`, criar `signingConfigs { create("release") { ... } }` e trocar
-    `signingConfig = signingConfigs.getByName("debug")` por `getByName("release")` no bloco
-    `release`. Manter fallback claro quando `key.properties` ausente (ex.: build de debug).
-  - _Validação:_ `flutter build appbundle --release` gera `.aab` assinado com a chave de upload.
+- [x] 4.3 Ligar o signingConfig de release no `android/app/build.gradle.kts`  [FEITO]
+  - `build.gradle.kts` agora carrega `rootProject.file("key.properties")`; quando presente,
+    cria `signingConfigs.create("release")` e o build type `release` usa essa config; quando
+    ausente, recorre à chave de debug (para `flutter run --release` em dev).
+  - _Validação:_ **PENDENTE** — `flutter build appbundle --release` com um `key.properties`
+    real gera o `.aab` assinado; exige Android SDK + keystore (ação do usuário).
 
 ---
 
